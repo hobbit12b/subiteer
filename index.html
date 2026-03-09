@@ -17,6 +17,7 @@
       --shadow: 0 10px 30px rgba(29, 49, 84, 0.12);
       --menu-width: 280px;
       --card-size: min(55vh, 560px);
+      --astronaut-size: 360px;
     }
 
     * { box-sizing: border-box; }
@@ -121,7 +122,7 @@
 
     .main {
       display: grid;
-      grid-template-rows: 1fr 185px;
+      grid-template-rows: 1fr 320px;
       gap: 18px;
       min-width: 0;
     }
@@ -420,13 +421,14 @@
     .astronaut {
       position: absolute;
       left: 80px;
-      bottom: 62px;
-      width: 90px;
-      height: 90px;
+      bottom: 6px;
+      width: var(--astronaut-size);
+      height: var(--astronaut-size);
       z-index: 3;
       transition: left 800ms ease, bottom 700ms ease, transform 220ms ease;
       transform-origin: center center;
       filter: drop-shadow(0 12px 16px rgba(38, 51, 80, 0.18));
+      pointer-events: none;
     }
 
     .astronaut-inner {
@@ -689,8 +691,8 @@
         tenframe: {},
       },
       assetsReady: false,
-      cardRoots: ["cards", "cards/cards"],
-      spriteRoots: ["sprites/astronaut", "sprites/astronaut/astronaut"],
+      cardRoots: ["cards", "cards/cards", "./cards", "./cards/cards"],
+      spriteRoots: ["sprites/astronaut", "sprites/astronaut/astronaut", "./sprites/astronaut", "./sprites/astronaut/astronaut"],
     };
 
     const els = {
@@ -729,6 +731,10 @@
         }
       }
       return list;
+    }
+
+    function astronautHalfWidth() {
+      return (els.astronaut?.offsetWidth || 360) / 2;
     }
 
     const candidateCards = {
@@ -991,10 +997,11 @@
     function updateAstronautPosition(immediate = false) {
       const nodePositions = getNodePositions();
       const index = Math.max(0, Math.min(state.progress, state.stepCount));
-      const left = index === 0 ? nodePositions[0] - 45 : nodePositions[index - 1] - 45;
+      const half = astronautHalfWidth();
+      const left = index === 0 ? nodePositions[0] - half : nodePositions[index - 1] - half;
       if (immediate) els.astronaut.style.transition = "none";
       els.astronaut.style.left = `${left}px`;
-      els.astronaut.style.bottom = "62px";
+      els.astronaut.style.bottom = "6px";
       if (immediate) requestAnimationFrame(() => {
         els.astronaut.style.transition = "left 800ms ease, bottom 700ms ease, transform 220ms ease";
       });
@@ -1053,21 +1060,22 @@
     async function animateAstronaut() {
       const targetIndex = state.progress;
       const positions = getNodePositions();
-      const targetLeft = positions[Math.max(0, targetIndex - 1)] - 45;
+      const half = astronautHalfWidth();
+      const targetLeft = positions[Math.max(0, targetIndex - 1)] - half;
       const specialStep = targetIndex === 3 || targetIndex === state.stepCount;
 
       if (specialStep) {
         playFrameSequence(state.jumpFrames, 18, false);
         els.astronaut.style.left = `${targetLeft}px`;
-        els.astronaut.style.bottom = "118px";
+        els.astronaut.style.bottom = "92px";
         await sleep(680);
-        els.astronaut.style.bottom = "62px";
-        createDust(targetLeft + 42, 98);
+        els.astronaut.style.bottom = "6px";
+        createDust(targetLeft + half, 76);
         await sleep(1700);
       } else {
         playFrameSequence(state.walkFrames, 18, true);
         els.astronaut.style.left = `${targetLeft}px`;
-        els.astronaut.style.bottom = "62px";
+        els.astronaut.style.bottom = "6px";
         await sleep(820);
       }
       stopSpriteAnimation();
@@ -1147,7 +1155,15 @@
       const resolvedRoot = match.split("/idle/")[0];
       state.idleFrames = [`${resolvedRoot}/idle/frame_000001.png`];
       state.walkFrames = makeSequence(`${resolvedRoot}/walk/frame_`, 48, 69);
-      state.jumpFrames = makeSequence(`${resolvedRoot}/jump-land/frame_`, 90, 145);
+
+      const jumpStart = await firstExisting([
+        `${resolvedRoot}/jump-land/frame_000090.png`
+      ]);
+
+      if (jumpStart) {
+        const jumpRoot = jumpStart.replace(/\/frame_000090\.png$/, "");
+        state.jumpFrames = makeSequence(`${jumpRoot}/frame_`, 90, 145);
+      }
     }
 
     async function scanCards() {
