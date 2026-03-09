@@ -681,6 +681,16 @@
       walkFrames: [],
       jumpFrames: [],
       idleFrames: [],
+      cardManifest: {
+        fingers: {},
+        stars: {},
+        dice: {},
+        tally: {},
+        tenframe: {},
+      },
+      assetsReady: false,
+      cardRoots: ["cards", "cards/cards"],
+      spriteRoots: ["sprites/astronaut", "sprites/astronaut/astronaut"],
     };
 
     const els = {
@@ -711,93 +721,64 @@
       tenframe: "10-structuur",
     };
 
-    const cardManifest = {
-      fingers: {
-        1: ["cards/fingers/hand01.svg"],
-        2: ["cards/fingers/hand02.svg"],
-        3: ["cards/fingers/hand03.svg"],
-        4: ["cards/fingers/hand04.svg"],
-        5: ["cards/fingers/hand05.svg"],
-        6: ["cards/fingers/hand06.svg"],
-        7: ["cards/fingers/hand07.svg"],
-        8: ["cards/fingers/hand08.svg"],
-        9: ["cards/fingers/hand09.svg"],
-        10: ["cards/fingers/hand10.svg"],
-      },
-      stars: {
-        1: ["cards/stars/sterren01.svg"],
-        2: ["cards/stars/sterren02.svg"],
-        3: ["cards/stars/sterren03.svg"],
-        4: ["cards/stars/sterren04.svg"],
-        5: ["cards/stars/sterren05.svg"],
-        6: ["cards/stars/sterren06.svg"],
-        7: ["cards/stars/sterren07.svg"],
-        8: ["cards/stars/sterren08.svg"],
-        9: ["cards/stars/sterren09.svg"],
-        10: ["cards/stars/sterren10.svg"],
-        11: ["cards/stars/sterren11.svg"],
-        12: ["cards/stars/sterren12.svg"],
-      },
-      tally: {
-        1: ["cards/tally/turven01.svg"],
-        2: ["cards/tally/turven02.svg"],
-        3: ["cards/tally/turven03.svg"],
-        4: ["cards/tally/turven04.svg"],
-        5: ["cards/tally/turven05.svg"],
-        6: ["cards/tally/turven06.svg"],
-        7: ["cards/tally/turven07.svg"],
-        8: ["cards/tally/turven08.svg"],
-        9: ["cards/tally/turven09.svg"],
-        10: ["cards/tally/turven10.svg"],
-        11: ["cards/tally/turven11.svg"],
-        12: ["cards/tally/turven12.svg"],
-      },
-      tenframe: {
-        1: ["cards/tenframe/10-veld01.svg"],
-        2: ["cards/tenframe/10-veld02.svg"],
-        3: ["cards/tenframe/10-veld03.svg"],
-        4: ["cards/tenframe/10-veld04.svg"],
-        5: ["cards/tenframe/10-veld05.svg"],
-        6: ["cards/tenframe/10-veld06.svg"],
-        7: ["cards/tenframe/10-veld07.svg"],
-        10: ["cards/tenframe/10-veld10.svg", "cards/tenframe/10-veld10 (2).svg", "cards/tenframe/10-veld10 (3).svg"],
-        11: ["cards/tenframe/10-veld11.svg"],
-        12: ["cards/tenframe/10-veld12.svg", "cards/tenframe/10-veld12 (2).svg"],
-      },
-      dice: {
-        1: ["cards/dice/dobbelsteen01a.svg"],
-        2: ["cards/dice/dobbelsteen02a.svg", "cards/dice/dobbelsteen02b.svg"],
-        3: ["cards/dice/dobbelsteen03a.svg", "cards/dice/dobbelsteen03b.svg", "cards/dice/dobbelsteen03c.svg"],
-        4: ["cards/dice/dobbelsteen04a.svg", "cards/dice/dobbelsteen04b.svg", "cards/dice/dobbelsteen04c.svg", "cards/dice/dobbelsteen04d.svg"],
-        5: ["cards/dice/dobbelsteen05a.svg", "cards/dice/dobbelsteen05b.svg", "cards/dice/dobbelsteen05c.svg", "cards/dice/dobbelsteen05d.svg", "cards/dice/dobbelsteen05e.svg"],
-        6: ["cards/dice/dobbelsteen06a.svg", "cards/dice/dobbelsteen06b.svg", "cards/dice/dobbelsteen06c.svg", "cards/dice/dobbelsteen06d.svg", "cards/dice/dobbelsteen06e.svg", "cards/dice/dobbelsteen06f.svg"],
-        7: ["cards/dice/dobbelsteen07a.svg", "cards/dice/dobbelsteen07b.svg", "cards/dice/dobbelsteen07c.svg", "cards/dice/dobbelsteen07d.svg"],
-        8: ["cards/dice/dobbelsteen08a.svg", "cards/dice/dobbelsteen08b.svg", "cards/dice/dobbelsteen08c.svg"],
-        9: ["cards/dice/dobbelsteen09a.svg", "cards/dice/dobbelsteen09b.svg"],
-        10: ["cards/dice/dobbelsteen10a.svg"],
-      }
-    };
-
-    function rangePaths(folder, start, end) {
-      const paths = [];
+    function makeSequence(prefix, start, end, exts = ["png"]) {
+      const list = [];
       for (let i = start; i <= end; i++) {
-        paths.push(`${folder}/frame_${String(i).padStart(6, "0")}.png`);
+        for (const ext of exts) {
+          list.push(`${prefix}${String(i).padStart(6, "0")}.${ext}`);
+        }
       }
-      return paths;
+      return list;
     }
 
-    function init() {
-      state.idleFrames = ["sprites/astronaut/idle/frame_000001.png"];
-      state.walkFrames = rangePaths("sprites/astronaut/walk", 48, 69);
-      state.jumpFrames = rangePaths("sprites/astronaut/jump-land", 90, 145);
-      buildTrack();
-      bindEvents();
-      syncControls();
-      updateStatus();
-      setPrompt("👀");
-      updateAstronautPosition(true);
-      startIdleSprite();
-    }
+    const candidateCards = {
+      fingers: [
+        { value: 1, files: ["hand01", "hand1"] },
+        { value: 2, files: ["hand02", "hand2"] },
+        { value: 3, files: ["hand03", "hand3"] },
+        { value: 4, files: ["hand04", "hand4"] },
+        { value: 5, files: ["hand05", "hand5"] },
+        { value: 6, files: ["hand06", "hand6"] },
+        { value: 7, files: ["hand07", "hand7"] },
+        { value: 8, files: ["hand08", "hand8"] },
+        { value: 9, files: ["hand09", "hand9"] },
+        { value: 10, files: ["hand10"] },
+      ],
+      stars: Array.from({ length: 12 }, (_, i) => ({
+        value: i + 1,
+        files: [`sterren${String(i + 1).padStart(2, "0")}`, `sterren${i + 1}`],
+      })),
+      tally: Array.from({ length: 12 }, (_, i) => ({
+        value: i + 1,
+        files: [`turven${String(i + 1).padStart(2, "0")}`, `turven${i + 1}`],
+      })),
+      tenframe: [
+        { value: 1, files: ["10-veld01", "10-veld1"] },
+        { value: 2, files: ["10-veld02", "10-veld2"] },
+        { value: 3, files: ["10-veld03", "10-veld3"] },
+        { value: 4, files: ["10-veld04", "10-veld4"] },
+        { value: 5, files: ["10-veld05", "10-veld5"] },
+        { value: 6, files: ["10-veld06", "10-veld6"] },
+        { value: 7, files: ["10-veld07", "10-veld7"] },
+        { value: 8, files: ["10-veld08", "10-veld8"] },
+        { value: 9, files: ["10-veld09", "10-veld9"] },
+        { value: 10, files: ["10-veld10", "10-veld10 (2)", "10-veld10 (3)"] },
+        { value: 11, files: ["10-veld11"] },
+        { value: 12, files: ["10-veld12", "10-veld12 (2)"] },
+      ],
+      dice: [
+        { value: 1, files: ["dobbelsteen01a"] },
+        { value: 2, files: ["dobbelsteen02a", "dobbelsteen02b"] },
+        { value: 3, files: ["dobbelsteen03a", "dobbelsteen03b", "dobbelsteen03c"] },
+        { value: 4, files: ["dobbelsteen04a", "dobbelsteen04b", "dobbelsteen04c", "dobbelsteen04d"] },
+        { value: 5, files: ["dobbelsteen05a", "dobbelsteen05b", "dobbelsteen05c", "dobbelsteen05d", "dobbelsteen05e"] },
+        { value: 6, files: ["dobbelsteen06a", "dobbelsteen06b", "dobbelsteen06c", "dobbelsteen06d", "dobbelsteen06e", "dobbelsteen06f"] },
+        { value: 7, files: ["dobbelsteen07a", "dobbelsteen07b", "dobbelsteen07c", "dobbelsteen07d"] },
+        { value: 8, files: ["dobbelsteen08a", "dobbelsteen08b", "dobbelsteen08c"] },
+        { value: 9, files: ["dobbelsteen09a", "dobbelsteen09b"] },
+        { value: 10, files: ["dobbelsteen10a"] },
+      ],
+    };
 
     function bindEvents() {
       document.querySelectorAll('input[name="level"]').forEach(input => {
@@ -844,7 +825,7 @@
       els.showAgainBtn.disabled = !(hasCard && afterFlash);
       els.showAnswerBtn.disabled = !(hasCard && afterFlash);
       els.nextStepBtn.disabled = !(state.stage === "answer");
-      els.newCardBtn.disabled = state.lock;
+      els.newCardBtn.disabled = state.lock || !state.assetsReady;
     }
 
     function announce(text) { els.liveRegion.textContent = text; }
@@ -891,7 +872,7 @@
     function buildDeck() {
       const deck = [];
       for (const type of state.types) {
-        const entries = cardManifest[type] || {};
+        const entries = state.cardManifest[type] || {};
         Object.entries(entries).forEach(([value, files]) => {
           const numericValue = Number(value);
           if (numericValue <= state.levelMax) {
@@ -913,9 +894,12 @@
     }
 
     async function handleNewCard() {
-      if (state.lock) return;
+      if (state.lock || !state.assetsReady) return;
       const card = generateCard();
-      if (!card) return;
+      if (!card) {
+        announce("Geen kaarten gevonden.");
+        return;
+      }
       state.currentCard = card;
       state.stage = "flash";
       state.lock = true;
@@ -1044,6 +1028,10 @@
 
     function playFrameSequence(frames, fps = 16, loop = false) {
       stopSpriteAnimation();
+      if (!frames.length) {
+        els.astronaut.innerHTML = '<div class="astronaut-inner">👨‍🚀</div>';
+        return;
+      }
       let index = 0;
       const frameDuration = 1000 / fps;
       function next() {
@@ -1131,6 +1119,79 @@
         await sleep(150);
       }
       await sleep(1800);
+    }
+
+    function loadImage(url) {
+      return new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+        img.src = url;
+      });
+    }
+
+    async function firstExisting(paths) {
+      for (const path of paths) {
+        if (await loadImage(path)) return path;
+      }
+      return null;
+    }
+
+    async function resolveSpriteRoots() {
+      const idleCandidates = [];
+      for (const root of state.spriteRoots) {
+        idleCandidates.push(`${root}/idle/frame_000001.png`);
+      }
+      const match = await firstExisting(idleCandidates);
+      if (!match) return;
+      const resolvedRoot = match.split("/idle/")[0];
+      state.idleFrames = [`${resolvedRoot}/idle/frame_000001.png`];
+      state.walkFrames = makeSequence(`${resolvedRoot}/walk/frame_`, 48, 69);
+      state.jumpFrames = makeSequence(`${resolvedRoot}/jump-land/frame_`, 90, 145);
+    }
+
+    async function scanCards() {
+      const extensions = ["svg", "png", "SVG", "PNG"];
+      for (const [type, entries] of Object.entries(candidateCards)) {
+        state.cardManifest[type] = {};
+        for (const entry of entries) {
+          const found = [];
+          for (const root of state.cardRoots) {
+            for (const base of entry.files) {
+              for (const ext of extensions) {
+                const path = `${root}/${type}/${base}.${ext}`;
+                if (await loadImage(path)) found.push(path);
+              }
+            }
+          }
+          if (found.length) state.cardManifest[type][entry.value] = found;
+        }
+      }
+    }
+
+    function hasAnyCards() {
+      return Object.values(state.cardManifest).some(group => Object.keys(group).length > 0);
+    }
+
+    async function init() {
+      bindEvents();
+      buildTrack();
+      updateStatus();
+      setPrompt("⏳");
+      announce("Bestanden worden geladen.");
+      await resolveSpriteRoots();
+      await scanCards();
+      state.assetsReady = hasAnyCards();
+      syncControls();
+      updateAstronautPosition(true);
+      startIdleSprite();
+      if (state.assetsReady) {
+        setPrompt("👀");
+        announce("Kaarten en sprites zijn geladen.");
+      } else {
+        setPrompt("⚠️");
+        announce("Geen kaarten gevonden. Controleer de mappenstructuur.");
+      }
     }
 
     function sleep(ms) {
