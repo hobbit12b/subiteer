@@ -844,23 +844,44 @@
     }
 
     function showCard(card, showAnswer = false) {
-      els.cardSurface.innerHTML = "";
-      const img = document.createElement("img");
-      img.src = card.src;
-      img.alt = `${typeLabels[card.type]} ${card.value}`;
-      img.style.maxWidth = "100%";
-      img.style.maxHeight = "100%";
-      img.onerror = () => {
-        img.alt = `Bestand niet gevonden: ${card.src}`;
-        img.style.display = "none";
-        const note = document.createElement("div");
-        note.style.fontSize = "1.2rem";
-        note.style.color = "#7a2632";
-        note.style.textAlign = "center";
-        note.textContent = `Ontbrekend bestand: ${card.src}`;
-        els.cardSurface.appendChild(note);
-      };
-      els.cardSurface.appendChild(img);
+
+  els.cardSurface.innerHTML = "";
+
+  const img = document.createElement("img");
+  img.src = card.src;
+  img.alt = `${typeLabels[card.type]} ${card.value}`;
+
+  img.style.width = "100%";
+  img.style.height = "100%";
+  img.style.objectFit = "contain";
+  img.style.display = "block";
+
+  img.onerror = () => {
+    els.cardSurface.innerHTML = `
+      <div style="
+        font-size:1.6rem;
+        color:#7a2632;
+        text-align:center;
+        font-weight:700;">
+        kaart niet gevonden
+        <br>
+        ${card.src}
+      </div>
+    `;
+  };
+
+  els.cardSurface.appendChild(img);
+
+  els.cardWrap.classList.remove("hidden");
+  els.promptIcon.classList.add("hidden");
+
+  if (showAnswer) {
+    els.answerBadge.textContent = card.value;
+    els.answerBadge.classList.remove("hidden");
+  } else {
+    els.answerBadge.classList.add("hidden");
+  }
+}
       els.cardWrap.classList.remove("hidden");
       els.promptIcon.classList.add("hidden");
       if (showAnswer) {
