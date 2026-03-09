@@ -14,13 +14,14 @@
       --text: #1f2d3d;
       --muted: #66758c;
       --shadow: 0 10px 30px rgba(29, 49, 84, 0.12);
-      --menu-width: 300px;
+      --menu-width: 320px;
       --card-size: min(50vh, 500px);
       --astronaut-size: 360px;
     }
 
     * { box-sizing: border-box; }
     html, body { height: 100%; }
+
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -29,7 +30,9 @@
       overflow: hidden;
     }
 
-    button, input, label { font: inherit; }
+    button, input, label {
+      font: inherit;
+    }
 
     .app {
       display: grid;
@@ -53,8 +56,17 @@
       touch-action: manipulation;
     }
 
-    .sidebar h2 { margin: 0; font-size: 1.15rem; }
-    .sidebar p { margin: 0; color: var(--muted); font-size: 0.95rem; line-height: 1.35; }
+    .sidebar h2 {
+      margin: 0;
+      font-size: 1.15rem;
+    }
+
+    .sidebar p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.35;
+    }
 
     .section {
       border: 1px solid var(--panel-border);
@@ -66,7 +78,7 @@
     .controls-section {
       position: sticky;
       bottom: 0;
-      z-index: 15;
+      z-index: 20;
       margin-top: auto;
       background: rgba(251, 252, 255, 0.98);
       backdrop-filter: blur(6px);
@@ -81,9 +93,11 @@
       gap: 8px;
     }
 
-    .choice-group { display: grid; gap: 8px; }
+    .choice-group {
+      display: grid;
+      gap: 8px;
+    }
 
-    .radio-option,
     .check-option {
       display: flex;
       align-items: center;
@@ -96,7 +110,6 @@
       user-select: none;
     }
 
-    .radio-option input,
     .check-option input {
       transform: scale(1.25);
       accent-color: var(--accent);
@@ -104,8 +117,16 @@
       flex: 0 0 auto;
     }
 
-    .option-emoji { width: 28px; text-align: center; font-size: 1.2rem; }
-    .button-stack { display: grid; gap: 10px; }
+    .option-emoji {
+      width: 28px;
+      text-align: center;
+      font-size: 1.2rem;
+    }
+
+    .button-stack {
+      display: grid;
+      gap: 10px;
+    }
 
     .control-btn {
       border: 0;
@@ -120,15 +141,60 @@
       transition: transform 140ms ease, filter 140ms ease, opacity 140ms ease;
     }
 
-    .control-btn:hover { filter: brightness(1.03); }
-    .control-btn:active { transform: translateY(2px) scale(0.99); }
-    .control-btn[disabled] { opacity: 0.45; cursor: not-allowed; transform: none; }
+    .control-btn:hover {
+      filter: brightness(1.03);
+    }
+
+    .control-btn:active {
+      transform: translateY(2px) scale(0.99);
+    }
+
+    .control-btn[disabled] {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
 
     .btn-new { background: linear-gradient(180deg, #5f88ff, #4370ee); }
     .btn-show { background: linear-gradient(180deg, #ffcb72, #f1a62d); }
     .btn-answer { background: linear-gradient(180deg, #68c983, #4ca866); }
     .btn-next { background: linear-gradient(180deg, #9a80ff, #775ce2); }
     .btn-reset { background: linear-gradient(180deg, #8591a8, #657288); }
+
+    .slider-row {
+      display: grid;
+      gap: 10px;
+    }
+
+    .slider-block {
+      background: white;
+      border: 1px solid var(--panel-border);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .slider-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .slider-value {
+      min-width: 40px;
+      text-align: center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #eef4ff;
+      color: #3658b9;
+      font-weight: 800;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
 
     .main {
       display: grid;
@@ -157,8 +223,19 @@
       pointer-events: none;
     }
 
-    .board::before { width: 280px; height: 280px; top: -80px; right: -80px; }
-    .board::after { width: 180px; height: 180px; bottom: -50px; left: -50px; }
+    .board::before {
+      width: 280px;
+      height: 280px;
+      top: -80px;
+      right: -80px;
+    }
+
+    .board::after {
+      width: 180px;
+      height: 180px;
+      bottom: -50px;
+      left: -50px;
+    }
 
     .center-stage {
       position: relative;
@@ -183,7 +260,9 @@
 
     .prompt-icon.hidden,
     .card-wrap.hidden,
-    .answer-badge.hidden { display: none; }
+    .answer-badge.hidden {
+      display: none;
+    }
 
     .card-wrap {
       width: var(--card-size);
@@ -248,10 +327,18 @@
     .mission::before {
       content: "";
       position: absolute;
-      left: 0; right: 0; bottom: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       height: 56%;
-      background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(200,212,232,0.16) 30%, rgba(210,220,236,0.55) 100%);
+      background: linear-gradient(
+        180deg,
+        rgba(255,255,255,0) 0%,
+        rgba(200,212,232,0.16) 30%,
+        rgba(210,220,236,0.55) 100%
+      );
       pointer-events: none;
+      z-index: 0;
     }
 
     .planet {
@@ -263,6 +350,7 @@
       border-radius: 999px;
       background: radial-gradient(circle at 30% 30%, #fff 0%, #f7f1cf 38%, #e3d28f 100%);
       box-shadow: inset -10px -10px 0 rgba(0,0,0,0.06), 0 8px 18px rgba(70,84,118,0.12);
+      z-index: 1;
     }
 
     .mission-track {
@@ -274,17 +362,19 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      z-index: 1;
+      z-index: 2;
     }
 
     .track-line {
       position: absolute;
-      left: 22px; right: 22px;
-      top: 50%; transform: translateY(-50%);
+      left: 22px;
+      right: 22px;
+      top: 50%;
+      transform: translateY(-50%);
       height: 10px;
       border-radius: 999px;
       background: linear-gradient(90deg, #ced7e7, #d9e1ef);
-      z-index: 0;
+      z-index: 1;
     }
 
     .track-node {
@@ -294,11 +384,14 @@
       background: white;
       border: 5px solid #c7d2e5;
       position: relative;
-      z-index: 1;
+      z-index: 2;
       box-shadow: 0 6px 12px rgba(63, 81, 121, 0.12);
     }
 
-    .track-node.done { background: #dff7e6; border-color: #7ac389; }
+    .track-node.done {
+      background: #dff7e6;
+      border-color: #7ac389;
+    }
 
     .base {
       position: absolute;
@@ -306,7 +399,7 @@
       bottom: 16px;
       width: 110px;
       height: 110px;
-      z-index: 2;
+      z-index: 3;
     }
 
     .rocket {
@@ -315,12 +408,14 @@
       bottom: 32px;
       width: 54px;
       height: 86px;
-      z-index: 4;
+      z-index: 10;
       transform-origin: center bottom;
       transition: transform 2000ms cubic-bezier(.22,.61,.18,1), opacity 1200ms ease;
     }
 
-    .rocket.launching { transform: translateY(-340px) scale(1.05); }
+    .rocket.launching {
+      transform: translateY(-340px) scale(1.05);
+    }
 
     .rocket-flame {
       position: absolute;
@@ -337,7 +432,9 @@
     }
 
     .rocket.launch-ready .rocket-flame,
-    .rocket.launching .rocket-flame { opacity: 1; }
+    .rocket.launching .rocket-flame {
+      opacity: 1;
+    }
 
     .astronaut {
       position: absolute;
@@ -345,7 +442,7 @@
       bottom: 6px;
       width: var(--astronaut-size);
       height: var(--astronaut-size);
-      z-index: 3;
+      z-index: 30;
       transition: left 800ms ease, bottom 700ms ease, transform 220ms ease;
       transform-origin: center center;
       filter: drop-shadow(0 12px 16px rgba(38, 51, 80, 0.18));
@@ -391,12 +488,13 @@
       gap: 8px;
     }
 
-    .burst, .dust-layer {
+    .burst,
+    .dust-layer {
       position: absolute;
       inset: 0;
       pointer-events: none;
       overflow: hidden;
-      z-index: 5;
+      z-index: 40;
     }
 
     .spark {
@@ -479,11 +577,23 @@
       </div>
 
       <section class="section">
-        <div class="section-title">🎚 Niveau</div>
-        <div class="choice-group" id="levelGroup">
-          <label class="radio-option"><input type="radio" name="level" value="4" checked> t/m 4</label>
-          <label class="radio-option"><input type="radio" name="level" value="6"> t/m 6</label>
-          <label class="radio-option"><input type="radio" name="level" value="10"> t/m 10</label>
+        <div class="section-title">🎚 Bereik</div>
+        <div class="slider-row">
+          <div class="slider-block">
+            <div class="slider-label">
+              <span>minimum</span>
+              <span id="minValue" class="slider-value">1</span>
+            </div>
+            <input id="minSlider" type="range" min="1" max="10" value="1" />
+          </div>
+
+          <div class="slider-block">
+            <div class="slider-label">
+              <span>maximum</span>
+              <span id="maxValue" class="slider-value">4</span>
+            </div>
+            <input id="maxSlider" type="range" min="1" max="10" value="4" />
+          </div>
         </div>
       </section>
 
@@ -501,9 +611,9 @@
       <section class="section">
         <div class="section-title">⏱ Kaarttijd</div>
         <div class="choice-group">
-          <label class="radio-option"><input type="radio" name="showTime" value="800"> kort</label>
-          <label class="radio-option"><input type="radio" name="showTime" value="1200" checked> normaal</label>
-          <label class="radio-option"><input type="radio" name="showTime" value="1800"> lang</label>
+          <label class="check-option"><input type="radio" name="showTime" value="800"><span class="option-emoji">⏱</span>kort</label>
+          <label class="check-option"><input type="radio" name="showTime" value="1200" checked><span class="option-emoji">⏱</span>normaal</label>
+          <label class="check-option"><input type="radio" name="showTime" value="1800"><span class="option-emoji">⏱</span>lang</label>
         </div>
       </section>
 
@@ -522,7 +632,7 @@
     <main class="main">
       <section class="board">
         <div class="status-row">
-          <div class="badge"><span>🎚</span><span id="statusLevel">t/m 4</span></div>
+          <div class="badge"><span>🎚</span><span id="statusRange">1 t/m 4</span></div>
           <div class="badge"><span>🃏</span><span id="statusTypes">5 soorten</span></div>
         </div>
 
@@ -571,7 +681,8 @@
 
   <script>
     const state = {
-      levelMax: 4,
+      minValue: 1,
+      maxValue: 4,
       types: new Set(["fingers", "stars", "dice", "tally", "tenframe"]),
       showTime: 1200,
       currentCard: null,
@@ -605,9 +716,13 @@
       rocket: document.getElementById("rocket"),
       burst: document.getElementById("burst"),
       dustLayer: document.getElementById("dustLayer"),
-      statusLevel: document.getElementById("statusLevel"),
+      statusRange: document.getElementById("statusRange"),
       statusTypes: document.getElementById("statusTypes"),
       liveRegion: document.getElementById("liveRegion"),
+      minSlider: document.getElementById("minSlider"),
+      maxSlider: document.getElementById("maxSlider"),
+      minValue: document.getElementById("minValue"),
+      maxValue: document.getElementById("maxValue"),
     };
 
     const typeLabels = {
@@ -699,11 +814,24 @@
     };
 
     function bindEvents() {
-      document.querySelectorAll('input[name="level"]').forEach(input => {
-        input.addEventListener("change", () => {
-          state.levelMax = Number(input.value);
-          updateStatus();
-        });
+      els.minSlider.addEventListener("input", () => {
+        let val = Number(els.minSlider.value);
+        if (val > state.maxValue) {
+          state.maxValue = val;
+          els.maxSlider.value = String(val);
+        }
+        state.minValue = val;
+        updateRangeUi();
+      });
+
+      els.maxSlider.addEventListener("input", () => {
+        let val = Number(els.maxSlider.value);
+        if (val < state.minValue) {
+          state.minValue = val;
+          els.minSlider.value = String(val);
+        }
+        state.maxValue = val;
+        updateRangeUi();
       });
 
       document.querySelectorAll('#typeGroup input[type="checkbox"]').forEach(input => {
@@ -731,8 +859,14 @@
       els.resetBtn.addEventListener("click", handleReset);
     }
 
+    function updateRangeUi() {
+      els.minValue.textContent = String(state.minValue);
+      els.maxValue.textContent = String(state.maxValue);
+      updateStatus();
+    }
+
     function updateStatus() {
-      els.statusLevel.textContent = `t/m ${state.levelMax}`;
+      els.statusRange.textContent = `${state.minValue} t/m ${state.maxValue}`;
       const names = [...state.types].map(key => typeLabels[key]);
       els.statusTypes.textContent = names.length === 1 ? names[0] : `${names.length} soorten`;
     }
@@ -789,7 +923,7 @@
         const entries = state.cardManifest[type] || {};
         Object.entries(entries).forEach(([value, files]) => {
           const numericValue = Number(value);
-          if (numericValue <= state.levelMax) {
+          if (numericValue >= state.minValue && numericValue <= state.maxValue) {
             files.forEach(src => deck.push({ type, value: numericValue, src }));
           }
         });
@@ -811,7 +945,7 @@
       if (state.lock || !state.assetsReady) return;
       const card = generateCard();
       if (!card) {
-        announce("Geen kaarten gevonden.");
+        announce("Geen kaarten gevonden binnen dit bereik.");
         return;
       }
 
@@ -915,25 +1049,43 @@
       return (els.astronaut?.offsetWidth || 360) / 2;
     }
 
+    function getNodePositions() {
+      const nodes = [...els.track.querySelectorAll(".track-node")];
+      return nodes.map(node => node.offsetLeft + node.offsetWidth / 2 + els.track.offsetLeft);
+    }
+
+    function getStartLeft(nodePositions) {
+      const half = astronautHalfWidth();
+      const defaultGap = 160;
+      let gap = defaultGap;
+      if (nodePositions.length > 1) {
+        gap = nodePositions[1] - nodePositions[0];
+      }
+      return nodePositions[0] - half - gap;
+    }
+
     function updateAstronautPosition(immediate = false) {
       const nodePositions = getNodePositions();
       if (!nodePositions.length) return;
-      const index = Math.max(0, Math.min(state.progress, state.stepCount));
+
       const half = astronautHalfWidth();
-      const left = index === 0 ? nodePositions[0] - half : nodePositions[index - 1] - half;
+      let left;
+
+      if (state.progress === 0) {
+        left = getStartLeft(nodePositions);
+      } else {
+        left = nodePositions[state.progress - 1] - half;
+      }
+
       if (immediate) els.astronaut.style.transition = "none";
       els.astronaut.style.left = `${left}px`;
       els.astronaut.style.bottom = "6px";
+
       if (immediate) {
         requestAnimationFrame(() => {
           els.astronaut.style.transition = "left 800ms ease, bottom 700ms ease, transform 220ms ease";
         });
       }
-    }
-
-    function getNodePositions() {
-      const nodes = [...els.track.querySelectorAll(".track-node")];
-      return nodes.map(node => node.offsetLeft + node.offsetWidth / 2 + els.track.offsetLeft);
     }
 
     function stopSpriteAnimation() {
@@ -1004,13 +1156,12 @@
     }
 
     async function animateAstronaut() {
-      const targetIndex = state.progress;
-      const positions = getNodePositions();
-      if (!positions.length) return;
+      const nodePositions = getNodePositions();
+      if (!nodePositions.length) return;
 
       const half = astronautHalfWidth();
-      const targetLeft = positions[Math.max(0, targetIndex - 1)] - half;
-      const specialStep = targetIndex === 3 || targetIndex === state.stepCount;
+      const targetLeft = nodePositions[Math.max(0, state.progress - 1)] - half;
+      const specialStep = state.progress === 3 || state.progress === state.stepCount;
 
       if (specialStep) {
         playFrameSequence(state.jumpFrames, 18, false);
@@ -1044,8 +1195,13 @@
       }
     }
 
-    function celebrateSmall() { createSparks(8, 42, 58); }
-    function celebrateBig() { createSparks(20, 48, 54); }
+    function celebrateSmall() {
+      createSparks(8, 42, 58);
+    }
+
+    function celebrateBig() {
+      createSparks(20, 48, 54);
+    }
 
     function createSparks(count, minLeft, spread) {
       for (let i = 0; i < count; i++) {
@@ -1089,7 +1245,7 @@
     function init() {
       bindEvents();
       buildTrack();
-      updateStatus();
+      updateRangeUi();
       state.assetsReady = hasAnyCards();
       syncControls();
       updateAstronautPosition(true);
