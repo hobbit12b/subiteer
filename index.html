@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subiteren op de Maan</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --panel-border: #d7deeb;
+      --accent: #4e7cf0;
+      --accent-2: #ffb84d;
+      --success: #56b870;
+      --text: #1f2d3d;
+      --muted: #66758c;
+      --shadow: 0 10px 30px rgba(29, 49, 84, 0.12);
+      --menu-width: 280px;
+      --card-size: min(55vh, 560px);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top right, #ffffff 0%, var(--bg) 55%, #e6edf9 100%);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    button, input, label { font: inherit; }
+
+    .app {
+      display: grid;
+      grid-template-columns: var(--menu-width) 1fr;
+      height: 100vh;
+      gap: 20px;
+      padding: 16px;
+    }
+
+    .sidebar {
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow: auto;
+      touch-action: manipulation;
+    }
+
+    .sidebar h2 { margin: 0; font-size: 1.1rem; }
+    .sidebar p { margin: 0; color: var(--muted); font-size: 0.92rem; line-height: 1.35; }
+
+    .section {
+      border: 1px solid var(--panel-border);
+      border-radius: 18px;
+      padding: 12px;
+      background: #fbfcff;
+    }
+
+    .section-title {
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .choice-group { display: grid; gap: 8px; }
+
+    .radio-option,
+    .check-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: white;
+      border: 1px solid var(--panel-border);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .radio-option input,
+    .check-option input {
+      transform: scale(1.25);
+      accent-color: var(--accent);
+      cursor: pointer;
+      flex: 0 0 auto;
+    }
+
+    .option-emoji { width: 28px; text-align: center; font-size: 1.2rem; }
+    .button-stack { display: grid; gap: 10px; }
+
+    .control-btn {
+      border: 0;
+      border-radius: 18px;
+      padding: 16px 14px;
+      font-size: 1rem;
+      font-weight: 800;
+      color: white;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      min-height: 58px;
+      transition: transform 140ms ease, filter 140ms ease, opacity 140ms ease;
+    }
+
+    .control-btn:hover { filter: brightness(1.03); }
+    .control-btn:active { transform: translateY(2px) scale(0.99); }
+    .control-btn[disabled] { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    .btn-new { background: linear-gradient(180deg, #5f88ff, #4370ee); }
+    .btn-show { background: linear-gradient(180deg, #ffcb72, #f1a62d); }
+    .btn-answer { background: linear-gradient(180deg, #68c983, #4ca866); }
+    .btn-next { background: linear-gradient(180deg, #9a80ff, #775ce2); }
+    .btn-reset { background: linear-gradient(180deg, #8591a8, #657288); }
+
+    .main {
+      display: grid;
+      grid-template-rows: 1fr 185px;
+      gap: 18px;
+      min-width: 0;
+    }
+
+    .board {
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid var(--panel-border);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+    }
+
+    .board::before,
+    .board::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      background: rgba(120, 142, 183, 0.08);
+      pointer-events: none;
+    }
+
+    .board::before { width: 280px; height: 280px; top: -80px; right: -80px; }
+    .board::after { width: 180px; height: 180px; bottom: -50px; left: -50px; }
+
+    .center-stage {
+      position: relative;
+      z-index: 1;
+      width: min(86%, 760px);
+      height: min(86%, 760px);
+      display: grid;
+      place-items: center;
+    }
+
+    .prompt-icon {
+      width: 160px;
+      height: 160px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: white;
+      border: 4px solid var(--panel-border);
+      box-shadow: var(--shadow);
+      font-size: 4.2rem;
+      transition: transform 200ms ease, opacity 200ms ease;
+    }
+
+    .prompt-icon.hidden,
+    .card-wrap.hidden,
+    .answer-badge.hidden { display: none; }
+
+    .card-wrap {
+      width: var(--card-size);
+      height: var(--card-size);
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 34px;
+      background: #fff;
+      border: 6px solid #dde6f2;
+      box-shadow: 0 20px 50px rgba(22, 41, 74, 0.14);
+      display: grid;
+      place-items: center;
+      position: relative;
+      overflow: hidden;
+      padding: 24px;
+    }
+
+    .card-surface {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      display: grid;
+      place-items: center;
+    }
+
+    .answer-badge {
+      position: absolute;
+      right: 24px;
+      top: 24px;
+      z-index: 2;
+      min-width: 92px;
+      height: 92px;
+      padding: 0 18px;
+      border-radius: 28px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(180deg, #56c673, #47ab62);
+      color: white;
+      font-weight: 900;
+      font-size: 3rem;
+      box-shadow: var(--shadow);
+      border: 4px solid rgba(255,255,255,0.55);
+    }
+
+    .grid {
+      display: grid;
+      justify-items: center;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+      gap: 12px;
+    }
+
+    .star, .dot {
+      display: grid;
+      place-items: center;
+      font-size: clamp(2.1rem, 4.4vw, 4rem);
+      line-height: 1;
+    }
+
+    .finger-cell {
+      display: grid;
+      place-items: center;
+      width: 100%;
+      height: 100%;
+      font-size: clamp(2rem, 4.8vw, 5rem);
+    }
+
+    .dice-wrap {
+      width: min(74%, 340px);
+      aspect-ratio: 1 / 1;
+      border-radius: 22px;
+      background: white;
+      border: 6px solid #29364d;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      padding: 18px;
+      gap: 8px;
+      box-shadow: inset 0 0 0 8px rgba(0,0,0,0.03);
+    }
+
+    .pip {
+      width: min(68%, 34px);
+      aspect-ratio: 1 / 1;
+      border-radius: 999px;
+      background: #29364d;
+      justify-self: center;
+      align-self: center;
+      opacity: 0;
+    }
+    .pip.on { opacity: 1; }
+
+    .tally-wrap {
+      width: 88%;
+      height: 76%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .tally-group { position: relative; width: 92px; height: 132px; }
+
+    .tally-line {
+      position: absolute;
+      top: 8px;
+      bottom: 8px;
+      width: 10px;
+      border-radius: 10px;
+      background: #d06c3d;
+      box-shadow: inset 0 0 0 2px rgba(0,0,0,0.05);
+    }
+
+    .ten-wrap {
+      width: 88%;
+      height: 78%;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 12px;
+      align-items: center;
+      justify-items: center;
+      padding: 16px;
+      border-radius: 28px;
+      background: #f6f9ff;
+      border: 4px solid #dbe5f4;
+    }
+
+    .ten-cell {
+      width: min(86%, 74px);
+      aspect-ratio: 1 / 1;
+      border-radius: 999px;
+      border: 4px solid #9fb0ca;
+      background: white;
+      display: grid;
+      place-items: center;
+      font-size: clamp(1.5rem, 3vw, 2.3rem);
+      color: #f4ba2a;
+    }
+
+    .ten-cell.filled { background: #fff8da; border-color: #e2b94d; }
+
+    .mission {
+      background: linear-gradient(180deg, #f6f9ff, #eef4fd);
+      border: 1px solid var(--panel-border);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      padding: 18px 26px;
+    }
+
+    .mission::before {
+      content: "";
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      height: 56%;
+      background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(200,212,232,0.16) 30%, rgba(210,220,236,0.55) 100%);
+      pointer-events: none;
+    }
+
+    .planet {
+      position: absolute;
+      left: 24px;
+      top: 18px;
+      width: 62px;
+      height: 62px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #fff 0%, #f7f1cf 38%, #e3d28f 100%);
+      box-shadow: inset -10px -10px 0 rgba(0,0,0,0.06), 0 8px 18px rgba(70,84,118,0.12);
+    }
+
+    .mission-track {
+      position: absolute;
+      left: 80px;
+      right: 120px;
+      bottom: 42px;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 1;
+    }
+
+    .track-line {
+      position: absolute;
+      left: 22px; right: 22px;
+      top: 50%; transform: translateY(-50%);
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #ced7e7, #d9e1ef);
+      z-index: 0;
+    }
+
+    .track-node {
+      width: 36px; height: 36px;
+      border-radius: 999px;
+      background: white;
+      border: 5px solid #c7d2e5;
+      position: relative;
+      z-index: 1;
+      box-shadow: 0 6px 12px rgba(63, 81, 121, 0.12);
+    }
+
+    .track-node.done { background: #dff7e6; border-color: #7ac389; }
+
+    .base {
+      position: absolute;
+      right: 26px;
+      bottom: 16px;
+      width: 110px;
+      height: 110px;
+      z-index: 2;
+    }
+
+    .rocket {
+      position: absolute;
+      right: 50px;
+      bottom: 32px;
+      width: 54px;
+      height: 86px;
+      z-index: 4;
+      transform-origin: center bottom;
+      transition: transform 2000ms cubic-bezier(.22,.61,.18,1), opacity 1200ms ease;
+    }
+    .rocket.launching { transform: translateY(-340px) scale(1.05); }
+
+    .rocket-flame {
+      position: absolute;
+      left: 50%; bottom: -12px;
+      transform: translateX(-50%);
+      width: 20px; height: 34px;
+      border-radius: 50% 50% 70% 70%;
+      background: linear-gradient(180deg, #ffe57c, #ff9b34 50%, #ff6534 100%);
+      filter: blur(0.3px);
+      animation: flame 240ms ease-in-out infinite alternate;
+      opacity: 0;
+    }
+    .rocket.launch-ready .rocket-flame,
+    .rocket.launching .rocket-flame { opacity: 1; }
+
+    .astronaut {
+      position: absolute;
+      left: 80px;
+      bottom: 62px;
+      width: 90px;
+      height: 90px;
+      z-index: 3;
+      transition: left 800ms ease, bottom 700ms ease, transform 220ms ease;
+      transform-origin: center center;
+      filter: drop-shadow(0 12px 16px rgba(38, 51, 80, 0.18));
+    }
+
+    .astronaut-inner {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      animation: floatIdle 2200ms ease-in-out infinite;
+    }
+
+    .astronaut.walk .astronaut-inner { animation: walkBob 420ms ease-in-out infinite; }
+    .astronaut.landing .astronaut-inner { animation: landBounce 460ms ease-out 1; }
+
+    .status-row {
+      position: absolute;
+      left: 20px;
+      top: 18px;
+      z-index: 4;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      background: rgba(255,255,255,0.94);
+      border: 1px solid var(--panel-border);
+      border-radius: 999px;
+      padding: 8px 12px;
+      box-shadow: var(--shadow);
+      color: var(--muted);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .burst, .dust-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 5;
+    }
+
+    .spark {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      font-size: 18px;
+      animation: sparkFly 900ms ease-out forwards;
+      opacity: 0;
+    }
+
+    .dust {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.95), rgba(210,220,232,0.9) 45%, rgba(194,205,219,0.45) 72%, rgba(194,205,219,0) 100%);
+      animation: dustPuff 700ms ease-out forwards;
+      opacity: 0;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @keyframes floatIdle {
+      0%, 100% { transform: translateY(0px) rotate(-2deg); }
+      50% { transform: translateY(-8px) rotate(2deg); }
+    }
+    @keyframes walkBob {
+      0%, 100% { transform: translateY(0px) rotate(-6deg); }
+      50% { transform: translateY(-4px) rotate(6deg); }
+    }
+    @keyframes landBounce {
+      0% { transform: translateY(-12px) scale(1); }
+      60% { transform: translateY(4px) scale(1.06, 0.95); }
+      100% { transform: translateY(0px) scale(1); }
+    }
+    @keyframes sparkFly {
+      0% { opacity: 1; transform: translate(0, 0) scale(0.5); }
+      100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.2); }
+    }
+    @keyframes dustPuff {
+      0% { opacity: 0.85; transform: translate(0, 0) scale(0.35); }
+      100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.65); }
+    }
+    @keyframes flame {
+      0% { transform: translateX(-50%) scaleY(0.82); }
+      100% { transform: translateX(-50%) scaleY(1.1); }
+    }
+
+    @media (max-width: 1100px) {
+      .app { grid-template-columns: 240px 1fr; }
+      :root { --menu-width: 240px; }
+    }
+
+    @media (max-width: 900px) {
+      .app {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+        overflow: auto;
+        height: auto;
+        min-height: 100vh;
+      }
+      .main { min-height: 900px; }
+      .mission-track { left: 40px; right: 120px; }
+      .astronaut { left: 40px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div>
+        <h2>Subiteren op de Maan</h2>
+        <p>Docentbediening links. Groot, rustig spelvlak voor de kring.</p>
+      </div>
+
+      <section class="section">
+        <div class="section-title">🎚 Niveau</div>
+        <div class="choice-group" id="levelGroup">
+          <label class="radio-option"><input type="radio" name="level" value="4" checked> t/m 4</label>
+          <label class="radio-option"><input type="radio" name="level" value="6"> t/m 6</label>
+          <label class="radio-option"><input type="radio" name="level" value="10"> t/m 10</label>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">🃏 Kaartsoorten</div>
+        <div class="choice-group" id="typeGroup">
+          <label class="check-option"><input type="checkbox" value="fingers" checked><span class="option-emoji">✋</span>vingers</label>
+          <label class="check-option"><input type="checkbox" value="stars" checked><span class="option-emoji">⭐</span>sterren</label>
+          <label class="check-option"><input type="checkbox" value="dice" checked><span class="option-emoji">🎲</span>dobbelstenen</label>
+          <label class="check-option"><input type="checkbox" value="tally" checked><span class="option-emoji">////</span>turven</label>
+          <label class="check-option"><input type="checkbox" value="tenframe" checked><span class="option-emoji">🔟</span>10-structuur</label>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">⏱ Kaarttijd</div>
+        <div class="choice-group">
+          <label class="radio-option"><input type="radio" name="showTime" value="800"> kort</label>
+          <label class="radio-option"><input type="radio" name="showTime" value="1200" checked> normaal</label>
+          <label class="radio-option"><input type="radio" name="showTime" value="1800"> lang</label>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">🕹 Besturing</div>
+        <div class="button-stack">
+          <button id="newCardBtn" class="control-btn btn-new">Nieuwe kaart</button>
+          <button id="showAgainBtn" class="control-btn btn-show" disabled>Toon opnieuw</button>
+          <button id="showAnswerBtn" class="control-btn btn-answer" disabled>Toon antwoord</button>
+          <button id="nextStepBtn" class="control-btn btn-next" disabled>Volgende stap</button>
+          <button id="resetBtn" class="control-btn btn-reset">Reset missie</button>
+        </div>
+      </section>
+    </aside>
+
+    <main class="main">
+      <section class="board">
+        <div class="status-row">
+          <div class="badge"><span>🎚</span><span id="statusLevel">t/m 4</span></div>
+          <div class="badge"><span>🃏</span><span id="statusTypes">5 soorten</span></div>
+        </div>
+
+        <div class="center-stage">
+          <div id="promptIcon" class="prompt-icon">👀</div>
+          <div id="cardWrap" class="card-wrap hidden">
+            <div id="answerBadge" class="answer-badge hidden">5</div>
+            <div id="cardSurface" class="card-surface"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="mission">
+        <div class="planet"></div>
+        <div class="burst" id="burst"></div>
+        <div class="dust-layer" id="dustLayer"></div>
+        <div class="mission-track" id="track">
+          <div class="track-line"></div>
+        </div>
+
+        <div class="astronaut" id="astronaut" aria-hidden="true">
+          <div class="astronaut-inner">
+            <svg viewBox="0 0 120 120" width="100%" height="100%">
+              <ellipse cx="60" cy="108" rx="18" ry="6" fill="rgba(0,0,0,0.12)"/>
+              <g>
+                <rect x="42" y="50" width="36" height="34" rx="12" fill="#ffffff" stroke="#5b6a80" stroke-width="4"/>
+                <rect x="50" y="58" width="20" height="14" rx="4" fill="#8de0ff" stroke="#5b6a80" stroke-width="3"/>
+                <circle cx="60" cy="34" r="22" fill="#ffffff" stroke="#5b6a80" stroke-width="4"/>
+                <path d="M46 33c0-8 6-14 14-14s14 6 14 14v2H46v-2z" fill="#8de0ff" opacity="0.9"/>
+                <circle cx="54" cy="35" r="3" fill="#263447"/>
+                <circle cx="66" cy="35" r="3" fill="#263447"/>
+                <path d="M54 44c4 4 8 4 12 0" fill="none" stroke="#263447" stroke-width="3" stroke-linecap="round"/>
+                <path d="M42 56l-14 10" stroke="#5b6a80" stroke-width="4" stroke-linecap="round"/>
+                <path d="M78 56l14 10" stroke="#5b6a80" stroke-width="4" stroke-linecap="round"/>
+                <circle cx="25" cy="68" r="6" fill="#ffffff" stroke="#5b6a80" stroke-width="3"/>
+                <circle cx="95" cy="68" r="6" fill="#ffffff" stroke="#5b6a80" stroke-width="3"/>
+                <path d="M52 84l-10 18" stroke="#5b6a80" stroke-width="4" stroke-linecap="round"/>
+                <path d="M68 84l10 18" stroke="#5b6a80" stroke-width="4" stroke-linecap="round"/>
+                <circle cx="40" cy="105" r="6" fill="#ffffff" stroke="#5b6a80" stroke-width="3"/>
+                <circle cx="80" cy="105" r="6" fill="#ffffff" stroke="#5b6a80" stroke-width="3"/>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <div class="rocket" id="rocket" aria-hidden="true">
+          <svg viewBox="0 0 80 120" width="100%" height="100%">
+            <ellipse cx="40" cy="112" rx="17" ry="5" fill="rgba(0,0,0,0.12)"/>
+            <path d="M40 8c16 10 22 34 22 60v20H18V68c0-26 6-50 22-60z" fill="#ffffff" stroke="#4c5f7c" stroke-width="4"/>
+            <circle cx="40" cy="42" r="10" fill="#8de0ff" stroke="#4c5f7c" stroke-width="4"/>
+            <path d="M18 70l-12 20h16l8-14" fill="#e95f55" stroke="#4c5f7c" stroke-width="4"/>
+            <path d="M62 70l12 20H58l-8-14" fill="#e95f55" stroke="#4c5f7c" stroke-width="4"/>
+            <path d="M30 88l-6 16h12l-2-16" fill="#f2d484" stroke="#4c5f7c" stroke-width="4"/>
+            <path d="M50 88l6 16H44l2-16" fill="#f2d484" stroke="#4c5f7c" stroke-width="4"/>
+            <path d="M26 14h28" stroke="#e95f55" stroke-width="5" stroke-linecap="round"/>
+          </svg>
+          <div class="rocket-flame"></div>
+        </div>
+
+        <div class="base"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="sr-only" aria-live="polite" id="liveRegion"></div>
+
+  <script>
+    const state = {
+      levelMax: 4,
+      types: new Set(["fingers", "stars", "dice", "tally", "tenframe"]),
+      showTime: 1200,
+      currentCard: null,
+      progress: 0,
+      stepCount: 6,
+      stage: "idle",
+      lock: false,
+      rocketReady: false,
+      spriteTimer: null,
+      walkFrames: [],
+      jumpFrames: [],
+      idleFrames: [],
+    };
+
+    const els = {
+      newCardBtn: document.getElementById("newCardBtn"),
+      showAgainBtn: document.getElementById("showAgainBtn"),
+      showAnswerBtn: document.getElementById("showAnswerBtn"),
+      nextStepBtn: document.getElementById("nextStepBtn"),
+      resetBtn: document.getElementById("resetBtn"),
+      promptIcon: document.getElementById("promptIcon"),
+      cardWrap: document.getElementById("cardWrap"),
+      cardSurface: document.getElementById("cardSurface"),
+      answerBadge: document.getElementById("answerBadge"),
+      track: document.getElementById("track"),
+      astronaut: document.getElementById("astronaut"),
+      rocket: document.getElementById("rocket"),
+      burst: document.getElementById("burst"),
+      dustLayer: document.getElementById("dustLayer"),
+      statusLevel: document.getElementById("statusLevel"),
+      statusTypes: document.getElementById("statusTypes"),
+      liveRegion: document.getElementById("liveRegion"),
+    };
+
+    const typeLabels = {
+      fingers: "vingers",
+      stars: "sterren",
+      dice: "dobbelstenen",
+      tally: "turven",
+      tenframe: "10-structuur",
+    };
+
+    const cardManifest = {
+      fingers: {
+        1: ["cards/fingers/hand01.png"],
+        2: ["cards/fingers/hand02.png"],
+        3: ["cards/fingers/hand03.png"],
+        4: ["cards/fingers/hand04.png"],
+        5: ["cards/fingers/hand05.png"],
+        6: ["cards/fingers/hand06.png"],
+        7: ["cards/fingers/hand07.png"],
+        8: ["cards/fingers/hand08.png"],
+        9: ["cards/fingers/hand09.png"],
+        10: ["cards/fingers/hand10.png"],
+      },
+      stars: {
+        1: ["cards/stars/sterren01.png"],
+        2: ["cards/stars/sterren02.png"],
+        3: ["cards/stars/sterren03.png"],
+        4: ["cards/stars/sterren04.png"],
+        5: ["cards/stars/sterren05.png"],
+        6: ["cards/stars/sterren06.png"],
+        7: ["cards/stars/sterren07.png"],
+        8: ["cards/stars/sterren08.png"],
+        9: ["cards/stars/sterren09.png"],
+        10: ["cards/stars/sterren10.png"],
+        11: ["cards/stars/sterren11.png"],
+        12: ["cards/stars/sterren12.png"],
+      },
+      tally: {
+        1: ["cards/tally/turven01.png"],
+        2: ["cards/tally/turven02.png"],
+        3: ["cards/tally/turven03.png"],
+        4: ["cards/tally/turven04.png"],
+        5: ["cards/tally/turven05.png"],
+        6: ["cards/tally/turven06.png"],
+        7: ["cards/tally/turven07.png"],
+        8: ["cards/tally/turven08.png"],
+        9: ["cards/tally/turven09.png"],
+        10: ["cards/tally/turven10.png"],
+        11: ["cards/tally/turven11.png"],
+        12: ["cards/tally/turven12.png"],
+      },
+      tenframe: {
+        1: ["cards/tenframe/10-veld01.png"],
+        2: ["cards/tenframe/10-veld02.png"],
+        3: ["cards/tenframe/10-veld03.png"],
+        4: ["cards/tenframe/10-veld04.png"],
+        5: ["cards/tenframe/10-veld05.png"],
+        6: ["cards/tenframe/10-veld06.png"],
+        7: ["cards/tenframe/10-veld07.png"],
+        10: ["cards/tenframe/10-veld10.png", "cards/tenframe/10-veld10 (2).png", "cards/tenframe/10-veld10 (3).png"],
+        11: ["cards/tenframe/10-veld11.png"],
+        12: ["cards/tenframe/10-veld12.png", "cards/tenframe/10-veld12 (2).png"],
+      },
+      dice: {
+        1: ["cards/dice/dobbelsteen01a.png"],
+        2: ["cards/dice/dobbelsteen02a.png", "cards/dice/dobbelsteen02b.png"],
+        3: ["cards/dice/dobbelsteen03a.png", "cards/dice/dobbelsteen03b.png", "cards/dice/dobbelsteen03c.png"],
+        4: ["cards/dice/dobbelsteen04a.png", "cards/dice/dobbelsteen04b.png", "cards/dice/dobbelsteen04c.png", "cards/dice/dobbelsteen04d.png"],
+        5: ["cards/dice/dobbelsteen05a.png", "cards/dice/dobbelsteen05b.png", "cards/dice/dobbelsteen05c.png", "cards/dice/dobbelsteen05d.png", "cards/dice/dobbelsteen05e.png"],
+        6: ["cards/dice/dobbelsteen06a.png", "cards/dice/dobbelsteen06b.png", "cards/dice/dobbelsteen06c.png", "cards/dice/dobbelsteen06d.png", "cards/dice/dobbelsteen06e.png", "cards/dice/dobbelsteen06f.png"],
+        7: ["cards/dice/dobbelsteen07a.png", "cards/dice/dobbelsteen07b.png", "cards/dice/dobbelsteen07c.png", "cards/dice/dobbelsteen07d.png"],
+        8: ["cards/dice/dobbelsteen08a.png", "cards/dice/dobbelsteen08b.png", "cards/dice/dobbelsteen08c.png"],
+        9: ["cards/dice/dobbelsteen09a.png", "cards/dice/dobbelsteen09b.png"],
+        10: ["cards/dice/dobbelsteen10a.png"],
+      }
+    };
+
+    function rangePaths(folder, start, end) {
+      const paths = [];
+      for (let i = start; i <= end; i++) {
+        paths.push(`${folder}/frame_${String(i).padStart(6, "0")}.png`);
+      }
+      return paths;
+    }
+
+    function init() {
+      state.idleFrames = ["sprites/astronaut/idle/frame_000001.png"];
+      state.walkFrames = rangePaths("sprites/astronaut/walk", 48, 69);
+      state.jumpFrames = rangePaths("sprites/astronaut/jump-land", 90, 145);
+      buildTrack();
+      bindEvents();
+      syncControls();
+      updateStatus();
+      setPrompt("👀");
+      updateAstronautPosition(true);
+      startIdleSprite();
+    }
+
+    function bindEvents() {
+      document.querySelectorAll('input[name="level"]').forEach(input => {
+        input.addEventListener("change", () => {
+          state.levelMax = Number(input.value);
+          updateStatus();
+        });
+      });
+
+      document.querySelectorAll('#typeGroup input[type="checkbox"]').forEach(input => {
+        input.addEventListener("change", () => {
+          const selected = [...document.querySelectorAll('#typeGroup input:checked')].map(el => el.value);
+          if (!selected.length) {
+            input.checked = true;
+            return;
+          }
+          state.types = new Set(selected);
+          updateStatus();
+        });
+      });
+
+      document.querySelectorAll('input[name="showTime"]').forEach(input => {
+        input.addEventListener("change", () => {
+          state.showTime = Number(input.value);
+        });
+      });
+
+      els.newCardBtn.addEventListener("click", handleNewCard);
+      els.showAgainBtn.addEventListener("click", handleShowAgain);
+      els.showAnswerBtn.addEventListener("click", handleShowAnswer);
+      els.nextStepBtn.addEventListener("click", handleNextStep);
+      els.resetBtn.addEventListener("click", handleReset);
+    }
+
+    function updateStatus() {
+      els.statusLevel.textContent = `t/m ${state.levelMax}`;
+      const names = [...state.types].map(key => typeLabels[key]);
+      els.statusTypes.textContent = names.length === 1 ? names[0] : `${names.length} soorten`;
+    }
+
+    function syncControls() {
+      const hasCard = !!state.currentCard;
+      const afterFlash = state.stage === "respond" || state.stage === "review" || state.stage === "answer";
+      els.showAgainBtn.disabled = !(hasCard && afterFlash);
+      els.showAnswerBtn.disabled = !(hasCard && afterFlash);
+      els.nextStepBtn.disabled = !(state.stage === "answer");
+      els.newCardBtn.disabled = state.lock;
+    }
+
+    function announce(text) { els.liveRegion.textContent = text; }
+
+    function setPrompt(icon) {
+      els.promptIcon.textContent = icon;
+      els.promptIcon.classList.remove("hidden");
+      els.cardWrap.classList.add("hidden");
+      els.answerBadge.classList.add("hidden");
+    }
+
+    function showCard(card, showAnswer = false) {
+      els.cardSurface.innerHTML = "";
+      const img = document.createElement("img");
+      img.src = card.src;
+      img.alt = `${typeLabels[card.type]} ${card.value}`;
+      img.style.maxWidth = "100%";
+      img.style.maxHeight = "100%";
+      img.onerror = () => {
+        img.alt = `Bestand niet gevonden: ${card.src}`;
+        img.style.display = "none";
+        const note = document.createElement("div");
+        note.style.fontSize = "1.2rem";
+        note.style.color = "#7a2632";
+        note.style.textAlign = "center";
+        note.textContent = `Ontbrekend bestand: ${card.src}`;
+        els.cardSurface.appendChild(note);
+      };
+      els.cardSurface.appendChild(img);
+      els.cardWrap.classList.remove("hidden");
+      els.promptIcon.classList.add("hidden");
+      if (showAnswer) {
+        els.answerBadge.textContent = card.value;
+        els.answerBadge.classList.remove("hidden");
+      } else {
+        els.answerBadge.classList.add("hidden");
+      }
+    }
+
+    function randomItem(array) {
+      return array[Math.floor(Math.random() * array.length)];
+    }
+
+    function buildDeck() {
+      const deck = [];
+      for (const type of state.types) {
+        const entries = cardManifest[type] || {};
+        Object.entries(entries).forEach(([value, files]) => {
+          const numericValue = Number(value);
+          if (numericValue <= state.levelMax) {
+            files.forEach(src => deck.push({ type, value: numericValue, src }));
+          }
+        });
+      }
+      return deck;
+    }
+
+    function generateCard() {
+      const deck = buildDeck();
+      if (!deck.length) return null;
+      if (state.currentCard && deck.length > 1) {
+        const filtered = deck.filter(card => card.src !== state.currentCard.src);
+        return randomItem(filtered.length ? filtered : deck);
+      }
+      return randomItem(deck);
+    }
+
+    async function handleNewCard() {
+      if (state.lock) return;
+      const card = generateCard();
+      if (!card) return;
+      state.currentCard = card;
+      state.stage = "flash";
+      state.lock = true;
+      syncControls();
+      showCard(card, false);
+      announce("Nieuwe kaart getoond.");
+      await sleep(state.showTime);
+      setPrompt("✋");
+      state.stage = "respond";
+      state.lock = false;
+      syncControls();
+    }
+
+    function handleShowAgain() {
+      if (!state.currentCard || state.lock) return;
+      showCard(state.currentCard, false);
+      state.stage = "review";
+      syncControls();
+      announce("Kaart opnieuw getoond.");
+    }
+
+    function handleShowAnswer() {
+      if (!state.currentCard || state.lock) return;
+      showCard(state.currentCard, true);
+      state.stage = "answer";
+      syncControls();
+      announce(`Antwoord ${state.currentCard.value} getoond.`);
+      celebrateSmall();
+    }
+
+    async function handleNextStep() {
+      if (state.lock || state.stage !== "answer") return;
+      state.lock = true;
+      syncControls();
+      state.progress = Math.min(state.progress + 1, state.stepCount);
+      await animateAstronaut();
+      state.currentCard = null;
+      state.stage = "idle";
+      if (state.progress >= state.stepCount) {
+        setPrompt("🎉");
+        celebrateBig();
+        prepareRocket();
+        await sleep(500);
+        await launchRocket();
+        announce("Missie klaar. De raket stijgt op.");
+      } else {
+        setPrompt("👀");
+        announce("Astronaut is een stap verder.");
+      }
+      state.lock = false;
+      syncControls();
+      updateTrack();
+      startIdleSprite();
+    }
+
+    function handleReset() {
+      state.currentCard = null;
+      state.progress = 0;
+      state.stage = "idle";
+      state.lock = false;
+      state.rocketReady = false;
+      els.rocket.classList.remove("launching", "launch-ready");
+      els.rocket.style.opacity = "1";
+      els.rocket.style.transform = "translateY(0) scale(1)";
+      setPrompt("👀");
+      syncControls();
+      updateTrack();
+      updateAstronautPosition(true);
+      stopSpriteAnimation();
+      startIdleSprite();
+      announce("Missie opnieuw gestart.");
+    }
+
+    function buildTrack() {
+      for (let i = 0; i < state.stepCount; i++) {
+        const node = document.createElement("div");
+        node.className = "track-node";
+        node.dataset.index = i + 1;
+        els.track.appendChild(node);
+      }
+      updateTrack();
+    }
+
+    function updateTrack() {
+      const nodes = els.track.querySelectorAll(".track-node");
+      nodes.forEach((node, idx) => node.classList.toggle("done", idx < state.progress));
+    }
+
+    function updateAstronautPosition(immediate = false) {
+      const nodePositions = getNodePositions();
+      const index = Math.max(0, Math.min(state.progress, state.stepCount));
+      const left = index === 0 ? nodePositions[0] - 45 : nodePositions[index - 1] - 45;
+      if (immediate) els.astronaut.style.transition = "none";
+      els.astronaut.style.left = `${left}px`;
+      els.astronaut.style.bottom = "62px";
+      if (immediate) requestAnimationFrame(() => {
+        els.astronaut.style.transition = "left 800ms ease, bottom 700ms ease, transform 220ms ease";
+      });
+    }
+
+    function getNodePositions() {
+      const nodes = [...els.track.querySelectorAll(".track-node")];
+      return nodes.map(node => node.offsetLeft + node.offsetWidth / 2 + els.track.offsetLeft);
+    }
+
+    function stopSpriteAnimation() {
+      if (state.spriteTimer) {
+        clearTimeout(state.spriteTimer);
+        state.spriteTimer = null;
+      }
+    }
+
+    function setAstronautSprite(src) {
+      els.astronaut.innerHTML = "";
+      const img = document.createElement("img");
+      img.src = src;
+      img.alt = "astronaut";
+      img.style.width = "100%";
+      img.style.height = "100%";
+      img.style.objectFit = "contain";
+      img.onerror = () => {
+        els.astronaut.innerHTML = '<div class="astronaut-inner">👨‍🚀</div>';
+      };
+      els.astronaut.appendChild(img);
+    }
+
+    function playFrameSequence(frames, fps = 16, loop = false) {
+      stopSpriteAnimation();
+      let index = 0;
+      const frameDuration = 1000 / fps;
+      function next() {
+        setAstronautSprite(frames[index]);
+        index += 1;
+        if (index >= frames.length) {
+          if (loop) index = 0;
+          else return;
+        }
+        state.spriteTimer = setTimeout(next, frameDuration);
+      }
+      next();
+    }
+
+    function startIdleSprite() {
+      playFrameSequence(state.idleFrames, 1, true);
+    }
+
+    async function animateAstronaut() {
+      const targetIndex = state.progress;
+      const positions = getNodePositions();
+      const targetLeft = positions[Math.max(0, targetIndex - 1)] - 45;
+      const specialStep = targetIndex === 3 || targetIndex === state.stepCount;
+
+      if (specialStep) {
+        playFrameSequence(state.jumpFrames, 18, false);
+        els.astronaut.style.left = `${targetLeft}px`;
+        els.astronaut.style.bottom = "118px";
+        await sleep(680);
+        els.astronaut.style.bottom = "62px";
+        createDust(targetLeft + 42, 98);
+        await sleep(1700);
+      } else {
+        playFrameSequence(state.walkFrames, 18, true);
+        els.astronaut.style.left = `${targetLeft}px`;
+        els.astronaut.style.bottom = "62px";
+        await sleep(820);
+      }
+      stopSpriteAnimation();
+    }
+
+    function createDust(x, y) {
+      for (let i = 0; i < 7; i++) {
+        const puff = document.createElement("div");
+        puff.className = "dust";
+        puff.style.left = `${x - 10 + Math.random() * 30}px`;
+        puff.style.bottom = `${y - 8 + Math.random() * 14}px`;
+        puff.style.setProperty("--dx", `${(Math.random() - 0.5) * 80}px`);
+        puff.style.setProperty("--dy", `${-14 - Math.random() * 36}px`);
+        puff.style.animationDelay = `${Math.random() * 90}ms`;
+        els.dustLayer.appendChild(puff);
+        puff.addEventListener("animationend", () => puff.remove());
+      }
+    }
+
+    function celebrateSmall() { createSparks(8, 42, 58); }
+    function celebrateBig() { createSparks(20, 48, 54); }
+
+    function createSparks(count, minLeft, spread) {
+      for (let i = 0; i < count; i++) {
+        const spark = document.createElement("div");
+        spark.className = "spark";
+        spark.textContent = i % 2 === 0 ? "⭐" : "✨";
+        spark.style.left = `${minLeft + Math.random() * spread}%`;
+        spark.style.top = `${18 + Math.random() * 46}%`;
+        spark.style.setProperty("--dx", `${(Math.random() - 0.5) * 260}px`);
+        spark.style.setProperty("--dy", `${(Math.random() - 0.5) * 220}px`);
+        spark.style.animationDelay = `${Math.random() * 140}ms`;
+        els.burst.appendChild(spark);
+        spark.addEventListener("animationend", () => spark.remove());
+      }
+    }
+
+    function prepareRocket() {
+      if (state.rocketReady) return;
+      state.rocketReady = true;
+      els.rocket.classList.add("launch-ready");
+    }
+
+    async function launchRocket() {
+      els.rocket.classList.add("launching");
+      createSparks(14, 72, 12);
+      for (let i = 0; i < 5; i++) {
+        createDust(els.rocket.offsetLeft + 20, 40);
+        await sleep(150);
+      }
+      await sleep(1800);
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    init();
+  </script>
+</body>
+</html>
