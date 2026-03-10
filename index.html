@@ -403,16 +403,16 @@
     }
 
     .rocket {
-      position: absolute;
-      right: 34px;
-      bottom: 34px;
-      width: 86px;
-      height: 128px;
-      z-index: 12;
-      transform-origin: center bottom;
-      opacity: 1;
-      pointer-events: none;
-    }
+  position: absolute;
+  right: 20px;
+  bottom: 10px;
+  width: 180px;
+  height: 260px;
+  z-index: 50;
+  transform-origin: center bottom;
+  opacity: 1;
+  pointer-events: none;
+}
 
     .rocket img {
       width: 100%;
@@ -1302,10 +1302,10 @@
       els.rocket.classList.add("launching");
 
       createSparks(14, 72, 12);
-      for (let i = 0; i < 7; i++) {
-        createDust(els.rocket.offsetLeft + 28, 46);
-        await sleep(120);
-      }
+     for (let i = 0; i < 7; i++) {
+  createDust(els.rocket.offsetLeft + els.rocket.offsetWidth / 2 - 10, 70);
+  await sleep(120);
+}
 
       await new Promise(resolve => {
         const done = () => {
