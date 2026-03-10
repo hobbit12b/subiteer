@@ -757,7 +757,11 @@
 
     const DEFAULT_ASTRONAUT_TRANSITION = "left 800ms ease, bottom 700ms ease, transform 420ms ease, opacity 160ms ease";
     const JUMP_ASTRONAUT_TRANSITION = "left 480ms ease, bottom 300ms ease, transform 420ms ease, opacity 160ms ease";
-
+const JUMP_MOVE_START_FRAME = 98;
+const JUMP_LAND_FRAME = 117;
+const JUMP_START_FRAME = 90;
+const JUMP_FPS = 18;
+    
     function buildWalkFrames() {
       const frames = [];
       for (let i = 48; i <= 69; i++) {
@@ -1272,15 +1276,14 @@ function hideAstronaut() {
   els.astronaut.style.display = "none";
 }
 
-    async function animateAstronaut() {
-
+   async function animateAstronaut() {
   const nodePositions = getNodePositions();
   if (!nodePositions.length) return;
 
   const half = astronautHalfWidth();
   const targetLeft = nodePositions[Math.max(0, state.progress - 1)] - half;
 
-  const jumpSteps = [1,3,6];
+  const jumpSteps = [1, 3, 6];
   const isJumpStep = jumpSteps.includes(state.progress);
   const isFinalJump = state.progress === state.stepCount;
 
@@ -1288,39 +1291,48 @@ function hideAstronaut() {
   resetAstronautVisualState();
 
   if (isJumpStep) {
+    playFrameSequence(state.jumpFrames, JUMP_FPS, false);
 
-    const fps = 18;
-    const frameDuration = 1000 / fps;
+    const frameDuration = 1000 / JUMP_FPS;
 
-    const anticipationFrames = 8;
-    const anticipationDelay = frameDuration * anticipationFrames;
+    const anticipationFrames = JUMP_MOVE_START_FRAME - JUMP_START_FRAME; // 98 - 90 = 8
+    const movingFrames = JUMP_LAND_FRAME - JUMP_MOVE_START_FRAME;        // 117 - 98 = 19
+    const remainingFrames = state.jumpFrames.length - (JUMP_LAND_FRAME - JUMP_START_FRAME);
 
-    playFrameSequence(state.jumpFrames, fps, false);
+    const anticipationDelay = anticipationFrames * frameDuration;
+    const moveDuration = movingFrames * frameDuration;
+    const remainingDuration = remainingFrames * frameDuration;
+
+    els.astronaut.style.transition = "none";
 
     await sleep(anticipationDelay);
 
+    els.astronaut.style.transition = `left ${Math.round(moveDuration)}ms linear`;
     els.astronaut.style.left = `${targetLeft}px`;
 
-    await sleep(700);
+    await sleep(moveDuration);
+
+    els.astronaut.style.transition = "none";
 
     createDust(targetLeft + half, 76);
 
-    stopSpriteAnimation();
-
     if (isFinalJump) {
       hideAstronaut();
-      await sleep(200);
+      await sleep(remainingDuration);
+      stopSpriteAnimation();
+    } else {
+      await sleep(remainingDuration);
+      stopSpriteAnimation();
     }
 
+    els.astronaut.style.transition = DEFAULT_ASTRONAUT_TRANSITION;
   } else {
-
     playFrameSequence(state.walkFrames, 18, true);
-
+    els.astronaut.style.transition = "left 800ms linear";
     els.astronaut.style.left = `${targetLeft}px`;
-
-    await sleep(800);
-
+    await sleep(820);
     stopSpriteAnimation();
+    els.astronaut.style.transition = DEFAULT_ASTRONAUT_TRANSITION;
   }
 }
 
