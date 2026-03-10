@@ -423,19 +423,20 @@
     }
 
     .rocket-flame {
-      position: absolute;
-      left: 50%;
-      bottom: -10px;
-      width: 26px;
-      height: 40px;
-      border-radius: 50% 50% 70% 70%;
-      background: linear-gradient(180deg, #ffe57c, #ff9b34 50%, #ff6534 100%);
-      filter: blur(0.3px);
-      opacity: 0;
-      transform-origin: center top;
-      animation: flame 240ms ease-in-out infinite alternate;
-      will-change: transform, opacity;
-    }
+  position: absolute;
+  left: 50%;
+  bottom: -10px;
+  width: 26px;
+  height: 40px;
+  border-radius: 50% 50% 70% 70%;
+  background: linear-gradient(180deg, #ffe57c, #ff9b34 50%, #ff6534 100%);
+  filter: blur(0.3px);
+  opacity: 0;
+  transform: translateX(-50%) scaleY(1);
+  transform-origin: center top;
+  animation: flame 240ms linear infinite alternate;
+  will-change: transform, opacity;
+}
 
     .rocket.launch-ready .rocket-flame,
     .rocket.launching .rocket-flame {
@@ -570,9 +571,9 @@
     }
 
     @keyframes flame {
-      0% { transform: translateX(-50%) scaleY(0.82); }
-      100% { transform: translateX(-50%) scaleY(1.1); }
-    }
+  0% { transform: translateX(-50%) scaleY(0.82); }
+  100% { transform: translateX(-50%) scaleY(1.1); }
+}
 
     @media (max-width: 1100px) {
       .app { grid-template-columns: 240px 1fr; }
@@ -1275,7 +1276,7 @@ function hideAstronaut() {
   els.astronaut.style.opacity = "0";
 }
 
-   async function animateAstronaut() {
+  async function animateAstronaut() {
   const nodePositions = getNodePositions();
   if (!nodePositions.length) return;
 
@@ -1290,17 +1291,19 @@ function hideAstronaut() {
   resetAstronautVisualState();
 
   if (isJumpStep) {
+    const JUMP_START_FRAME = 90;
+    const JUMP_MOVE_START_FRAME = 98;
+    const JUMP_LAND_FRAME = 117;
+    const JUMP_FPS = 18;
+
     playFrameSequence(state.jumpFrames, JUMP_FPS, false);
 
     const frameDuration = 1000 / JUMP_FPS;
-
-    const anticipationFrames = JUMP_MOVE_START_FRAME - JUMP_START_FRAME; // 98 - 90 = 8
-    const movingFrames = JUMP_LAND_FRAME - JUMP_MOVE_START_FRAME;        // 117 - 98 = 19
-    const remainingFrames = state.jumpFrames.length - (JUMP_LAND_FRAME - JUMP_START_FRAME);
+    const anticipationFrames = JUMP_MOVE_START_FRAME - JUMP_START_FRAME; // 8
+    const movingFrames = JUMP_LAND_FRAME - JUMP_MOVE_START_FRAME;        // 19
 
     const anticipationDelay = anticipationFrames * frameDuration;
     const moveDuration = movingFrames * frameDuration;
-    const remainingDuration = remainingFrames * frameDuration;
 
     els.astronaut.style.transition = "none";
 
@@ -1312,14 +1315,15 @@ function hideAstronaut() {
     await sleep(moveDuration);
 
     els.astronaut.style.transition = "none";
-
     createDust(targetLeft + half, 76);
 
     if (isFinalJump) {
-      hideAstronaut();
-      await sleep(remainingDuration);
       stopSpriteAnimation();
+      hideAstronaut();
+      await sleep(120);
     } else {
+      const remainingFrames = state.jumpFrames.length - (JUMP_LAND_FRAME - JUMP_START_FRAME);
+      const remainingDuration = remainingFrames * frameDuration;
       await sleep(remainingDuration);
       stopSpriteAnimation();
     }
