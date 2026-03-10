@@ -1258,12 +1258,12 @@ const JUMP_FPS = 18;
     }
 
     function resetAstronautVisualState() {
-      els.astronaut.style.transform = "scale(1)";
-      els.astronaut.style.opacity = "1";
-      els.astronaut.style.transition = DEFAULT_ASTRONAUT_TRANSITION;
-    }
+  els.astronaut.style.transform = "scale(1)";
+  els.astronaut.style.opacity = "1";
+  els.astronaut.style.transition = DEFAULT_ASTRONAUT_TRANSITION;
+}
 
- function showAstronaut() {
+function showAstronaut() {
   els.astronaut.classList.remove("hidden-flight");
   els.astronaut.style.display = "block";
   els.astronaut.style.opacity = "1";
@@ -1273,7 +1273,6 @@ const JUMP_FPS = 18;
 function hideAstronaut() {
   els.astronaut.classList.add("hidden-flight");
   els.astronaut.style.opacity = "0";
-  els.astronaut.style.display = "none";
 }
 
    async function animateAstronaut() {
