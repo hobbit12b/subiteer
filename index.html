@@ -45,12 +45,12 @@
     .sidebar {
       background: rgba(255, 255, 255, 0.96);
       border: 1px solid var(--panel-border);
-      border-radius: 24px;
+      border-radius: 20px;
       box-shadow: var(--shadow);
-      padding: 16px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 10px;
       overflow: auto;
       min-height: 0;
       touch-action: manipulation;
@@ -58,20 +58,21 @@
 
     .sidebar h2 {
       margin: 0;
-      font-size: 1.15rem;
+      font-size: 1rem;
+      line-height: 1.2;
     }
 
     .sidebar p {
       margin: 0;
       color: var(--muted);
-      font-size: 0.95rem;
-      line-height: 1.35;
+      font-size: 0.9rem;
+      line-height: 1.3;
     }
 
     .section {
       border: 1px solid var(--panel-border);
-      border-radius: 18px;
-      padding: 12px;
+      border-radius: 14px;
+      padding: 10px;
       background: #fbfcff;
     }
 
@@ -82,62 +83,65 @@
       margin-top: auto;
       background: rgba(251, 252, 255, 0.98);
       backdrop-filter: blur(6px);
-      box-shadow: 0 -8px 18px rgba(29, 49, 84, 0.08);
+      box-shadow: 0 -6px 14px rgba(29, 49, 84, 0.08);
     }
 
     .section-title {
       font-weight: 700;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
+      font-size: 0.95rem;
     }
 
     .choice-group {
       display: grid;
-      gap: 8px;
+      gap: 6px;
     }
 
     .check-option {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
-      border-radius: 14px;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 10px;
       background: white;
       border: 1px solid var(--panel-border);
       cursor: pointer;
       user-select: none;
+      font-size: 0.92rem;
+      line-height: 1.2;
     }
 
     .check-option input {
-      transform: scale(1.25);
+      transform: scale(1.1);
       accent-color: var(--accent);
       cursor: pointer;
       flex: 0 0 auto;
     }
 
     .option-emoji {
-      width: 28px;
+      width: 24px;
       text-align: center;
-      font-size: 1.2rem;
+      font-size: 1rem;
     }
 
     .button-stack {
       display: grid;
-      gap: 10px;
+      gap: 8px;
     }
 
     .control-btn {
       border: 0;
-      border-radius: 18px;
-      padding: 16px 14px;
-      font-size: 1rem;
+      border-radius: 14px;
+      padding: 11px 12px;
+      font-size: 0.92rem;
       font-weight: 800;
       color: white;
       box-shadow: var(--shadow);
       cursor: pointer;
-      min-height: 58px;
+      min-height: 44px;
       transition: transform 140ms ease, filter 140ms ease, opacity 140ms ease;
     }
 
@@ -170,8 +174,8 @@
     .slider-block {
       background: white;
       border: 1px solid var(--panel-border);
-      border-radius: 14px;
-      padding: 12px;
+      border-radius: 12px;
+      padding: 10px;
     }
 
     .slider-label {
@@ -179,22 +183,94 @@
       justify-content: space-between;
       align-items: center;
       font-weight: 700;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
     }
 
     .slider-value {
-      min-width: 40px;
+      min-width: 34px;
       text-align: center;
-      padding: 4px 8px;
+      padding: 3px 7px;
       border-radius: 999px;
       background: #eef4ff;
       color: #3658b9;
       font-weight: 800;
+      font-size: 0.85rem;
     }
 
     input[type="range"] {
       width: 100%;
       accent-color: var(--accent);
+    }
+
+    .dual-range-block {
+      padding-bottom: 14px;
+    }
+
+    .dual-range {
+      position: relative;
+      height: 34px;
+      display: flex;
+      align-items: center;
+    }
+
+    .dual-range-track {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 6px;
+      border-radius: 999px;
+      background: #dbe5f5;
+    }
+
+    .dual-range-fill {
+      position: absolute;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    .dual-range input[type="range"] {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      margin: 0;
+      background: none;
+      pointer-events: none;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .dual-range input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      border: 2px solid var(--accent);
+      box-shadow: 0 2px 6px rgba(29, 49, 84, 0.18);
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    .dual-range input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      border: 2px solid var(--accent);
+      box-shadow: 0 2px 6px rgba(29, 49, 84, 0.18);
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    .dual-range input[type="range"]::-webkit-slider-runnable-track {
+      background: transparent;
+    }
+
+    .dual-range input[type="range"]::-moz-range-track {
+      background: transparent;
     }
 
     .main {
@@ -422,21 +498,21 @@
       display: block;
     }
 
-  .rocket-flame {
-  position: absolute;
-  left: 50%;
-  bottom: -10px;
-  width: 26px;
-  height: 40px;
-  border-radius: 50% 50% 70% 70%;
-  background: linear-gradient(180deg, #ffe57c, #ff9b34 50%, #ff6534 100%);
-  filter: blur(0.3px);
-  opacity: 0;
-  transform: translateX(-50%) scaleY(1);
-  transform-origin: center top;
-  animation: flame 240ms linear infinite alternate;
-  will-change: transform, opacity;
-}
+    .rocket-flame {
+      position: absolute;
+      left: 50%;
+      bottom: -10px;
+      width: 26px;
+      height: 40px;
+      border-radius: 50% 50% 70% 70%;
+      background: linear-gradient(180deg, #ffe57c, #ff9b34 50%, #ff6534 100%);
+      filter: blur(0.3px);
+      opacity: 0;
+      transform: translateX(-50%) scaleY(1);
+      transform-origin: center top;
+      animation: flame 240ms linear infinite alternate;
+      will-change: transform, opacity;
+    }
 
     .rocket.launch-ready .rocket-flame,
     .rocket.launching .rocket-flame {
@@ -463,14 +539,19 @@
     }
 
     .astronaut {
-  position: absolute;
-  left: 80px;
-  bottom: 6px;
-  width: var(--astronaut-size);
-  height: var(--astronaut-size);
-  z-index: 30;
-  transition: left 500ms linear;
-}
+      position: absolute;
+      left: 80px;
+      bottom: 6px;
+      width: var(--astronaut-size);
+      height: var(--astronaut-size);
+      z-index: 30;
+      transition: left 500ms linear;
+      transform-origin: center center;
+      filter: drop-shadow(0 12px 16px rgba(38, 51, 80, 0.18));
+      pointer-events: none;
+      opacity: 1;
+      transform: scale(1);
+    }
 
     .astronaut.hidden-flight {
       opacity: 0;
@@ -571,9 +652,9 @@
     }
 
     @keyframes flame {
-  0% { transform: translateX(-50%) scaleY(0.82); }
-  100% { transform: translateX(-50%) scaleY(1.1); }
-}
+      0% { transform: translateX(-50%) scaleY(0.82); }
+      100% { transform: translateX(-50%) scaleY(1.1); }
+    }
 
     @media (max-width: 1100px) {
       .app { grid-template-columns: 240px 1fr; }
@@ -600,25 +681,19 @@
     <aside class="sidebar">
       <div>
         <h2>Subiteren op de Maan</h2>
-        <p>Docentbediening links. Groot, rustig spelvlak voor de kring.</p>
       </div>
 
       <section class="section">
         <div class="section-title">🎚 Bereik</div>
-        <div class="slider-row">
-          <div class="slider-block">
-            <div class="slider-label">
-              <span>minimum</span>
-              <span id="minValue" class="slider-value">1</span>
-            </div>
-            <input id="minSlider" type="range" min="1" max="10" value="1" />
+        <div class="slider-block dual-range-block">
+          <div class="slider-label">
+            <span><span id="minValue" class="slider-value">1</span> t/m <span id="maxValue" class="slider-value">4</span></span>
           </div>
 
-          <div class="slider-block">
-            <div class="slider-label">
-              <span>maximum</span>
-              <span id="maxValue" class="slider-value">4</span>
-            </div>
+          <div class="dual-range">
+            <div class="dual-range-track"></div>
+            <div id="dualRangeFill" class="dual-range-fill"></div>
+            <input id="minSlider" type="range" min="1" max="10" value="1" />
             <input id="maxSlider" type="range" min="1" max="10" value="4" />
           </div>
         </div>
@@ -650,8 +725,8 @@
           <button id="newCardBtn" class="control-btn btn-new">Nieuwe kaart</button>
           <button id="showAgainBtn" class="control-btn btn-show" disabled>Toon opnieuw</button>
           <button id="showAnswerBtn" class="control-btn btn-answer" disabled>Toon antwoord</button>
-          <button id="nextStepBtn" class="control-btn btn-next" disabled>Volgende kaart</button>
-          <button id="manualMoveBtn" class="control-btn btn-manual">Astronaut vooruit</button>
+          <button id="nextStepBtn" class="control-btn btn-next" disabled>Volgende stap</button>
+          <button id="manualMoveBtn" class="control-btn btn-manual">Astronaut handmatig vooruit</button>
           <button id="resetBtn" class="control-btn btn-reset">Reset missie</button>
         </div>
       </section>
@@ -746,6 +821,7 @@
       maxSlider: document.getElementById("maxSlider"),
       minValue: document.getElementById("minValue"),
       maxValue: document.getElementById("maxValue"),
+      dualRangeFill: document.getElementById("dualRangeFill"),
     };
 
     const typeLabels = {
@@ -756,13 +832,12 @@
       tenframe: "10-structuur",
     };
 
-    const DEFAULT_ASTRONAUT_TRANSITION = "left 800ms ease, bottom 700ms ease, transform 420ms ease, opacity 160ms ease";
-    const JUMP_ASTRONAUT_TRANSITION = "left 480ms ease, bottom 300ms ease, transform 420ms ease, opacity 160ms ease";
-const JUMP_MOVE_START_FRAME = 98;
-const JUMP_LAND_FRAME = 117;
-const JUMP_START_FRAME = 90;
-const JUMP_FPS = 18;
-    
+    const DEFAULT_ASTRONAUT_TRANSITION = "left 500ms linear";
+    const JUMP_MOVE_START_FRAME = 98;
+    const JUMP_LAND_FRAME = 117;
+    const JUMP_START_FRAME = 90;
+    const JUMP_FPS = 18;
+
     function buildWalkFrames() {
       const frames = [];
       for (let i = 48; i <= 69; i++) {
@@ -896,9 +971,23 @@ const JUMP_FPS = 18;
       };
     }
 
+    function updateDualRangeFill() {
+      const min = Number(els.minSlider.min);
+      const max = Number(els.minSlider.max);
+      const minVal = state.minValue;
+      const maxVal = state.maxValue;
+
+      const left = ((minVal - min) / (max - min)) * 100;
+      const right = ((maxVal - min) / (max - min)) * 100;
+
+      els.dualRangeFill.style.left = `${left}%`;
+      els.dualRangeFill.style.width = `${right - left}%`;
+    }
+
     function updateRangeUi() {
       els.minValue.textContent = String(state.minValue);
       els.maxValue.textContent = String(state.maxValue);
+      updateDualRangeFill();
       updateStatus();
     }
 
@@ -1109,26 +1198,25 @@ const JUMP_FPS = 18;
     }
 
     function handleReset() {
-  state.currentCard = null;
-  state.previousAnswerValue = null;
-  state.progress = 0;
-  state.stage = "idle";
-  state.lock = false;
-  state.rocketReady = false;
-  state.cardVisible = false;
+      state.currentCard = null;
+      state.previousAnswerValue = null;
+      state.progress = 0;
+      state.stage = "idle";
+      state.lock = false;
+      state.rocketReady = false;
+      state.cardVisible = false;
 
-  els.astronaut.style.display = "block";
-  showAstronaut();
-  resetAstronautVisualState();
-  resetRocket();
-  setPrompt("👀");
-  syncControls();
-  updateTrack();
-  updateAstronautPosition(true);
-  stopSpriteAnimation();
-  startIdleSprite();
-  announce("Missie opnieuw gestart.");
-}
+      showAstronaut();
+      resetAstronautVisualState();
+      resetRocket();
+      setPrompt("👀");
+      syncControls();
+      updateTrack();
+      updateAstronautPosition(true);
+      stopSpriteAnimation();
+      startIdleSprite();
+      announce("Missie opnieuw gestart.");
+    }
 
     function buildTrack() {
       els.track.innerHTML = '<div class="track-line"></div>';
@@ -1182,7 +1270,6 @@ const JUMP_FPS = 18;
 
       if (immediate) els.astronaut.style.transition = "none";
       els.astronaut.style.left = `${left}px`;
-
 
       if (immediate) {
         requestAnimationFrame(() => {
@@ -1259,85 +1346,81 @@ const JUMP_FPS = 18;
     }
 
     function resetAstronautVisualState() {
-  els.astronaut.style.transform = "scale(1)";
-  els.astronaut.style.opacity = "1";
-  els.astronaut.style.transition = DEFAULT_ASTRONAUT_TRANSITION;
-}
-
-function showAstronaut() {
-  els.astronaut.classList.remove("hidden-flight");
-  els.astronaut.style.display = "block";
-  els.astronaut.style.opacity = "1";
-  els.astronaut.style.transform = "scale(1)";
-}
-
-function hideAstronaut() {
-  els.astronaut.classList.add("hidden-flight");
-  els.astronaut.style.opacity = "0";
-}
-
-  async function animateAstronaut() {
-  const nodePositions = getNodePositions();
-  if (!nodePositions.length) return;
-
-  const half = astronautHalfWidth();
-  const targetLeft = nodePositions[Math.max(0, state.progress - 1)] - half;
-
-  const jumpSteps = [1, 3, 6];
-  const isJumpStep = jumpSteps.includes(state.progress);
-  const isFinalJump = state.progress === state.stepCount;
-
-  showAstronaut();
-  resetAstronautVisualState();
-
-  if (isJumpStep) {
-    const JUMP_START_FRAME = 90;
-    const JUMP_MOVE_START_FRAME = 98;
-    const JUMP_LAND_FRAME = 117;
-    const JUMP_FPS = 18;
-
-    playFrameSequence(state.jumpFrames, JUMP_FPS, false);
-
-    const frameDuration = 1000 / JUMP_FPS;
-    const anticipationFrames = JUMP_MOVE_START_FRAME - JUMP_START_FRAME; // 8
-    const movingFrames = JUMP_LAND_FRAME - JUMP_MOVE_START_FRAME;        // 19
-
-    const anticipationDelay = anticipationFrames * frameDuration;
-    const moveDuration = movingFrames * frameDuration;
-
-    els.astronaut.style.transition = "none";
-
-    await sleep(anticipationDelay);
-
-    els.astronaut.style.transition = `left ${Math.round(moveDuration)}ms linear`;
-    els.astronaut.style.left = `${targetLeft}px`;
-
-    await sleep(moveDuration);
-
-    els.astronaut.style.transition = "none";
-    createDust(targetLeft + half, 76);
-
-    if (isFinalJump) {
-      stopSpriteAnimation();
-      hideAstronaut();
-      await sleep(120);
-    } else {
-      const remainingFrames = state.jumpFrames.length - (JUMP_LAND_FRAME - JUMP_START_FRAME);
-      const remainingDuration = remainingFrames * frameDuration;
-      await sleep(remainingDuration);
-      stopSpriteAnimation();
+      els.astronaut.style.transform = "scale(1)";
+      els.astronaut.style.opacity = "1";
+      els.astronaut.style.display = "block";
+      els.astronaut.style.transition = DEFAULT_ASTRONAUT_TRANSITION;
     }
 
-    els.astronaut.style.transition = DEFAULT_ASTRONAUT_TRANSITION;
-  } else {
-    playFrameSequence(state.walkFrames, 18, true);
-    els.astronaut.style.transition = "left 800ms linear";
-    els.astronaut.style.left = `${targetLeft}px`;
-    await sleep(820);
-    stopSpriteAnimation();
-    els.astronaut.style.transition = DEFAULT_ASTRONAUT_TRANSITION;
-  }
-}
+    function showAstronaut() {
+      els.astronaut.classList.remove("hidden-flight");
+      els.astronaut.style.display = "block";
+      els.astronaut.style.opacity = "1";
+      els.astronaut.style.transform = "scale(1)";
+    }
+
+    function hideAstronaut() {
+      els.astronaut.classList.add("hidden-flight");
+      els.astronaut.style.opacity = "0";
+    }
+
+    async function animateAstronaut() {
+      const nodePositions = getNodePositions();
+      if (!nodePositions.length) return;
+
+      const half = astronautHalfWidth();
+      const targetLeft = nodePositions[Math.max(0, state.progress - 1)] - half;
+
+      const jumpSteps = [1, 3, 6];
+      const isJumpStep = jumpSteps.includes(state.progress);
+      const isFinalJump = state.progress === state.stepCount;
+
+      showAstronaut();
+      resetAstronautVisualState();
+
+      if (isJumpStep) {
+        playFrameSequence(state.jumpFrames, JUMP_FPS, false);
+
+        const frameDuration = 1000 / JUMP_FPS;
+        const anticipationFrames = JUMP_MOVE_START_FRAME - JUMP_START_FRAME;
+        const movingFrames = JUMP_LAND_FRAME - JUMP_MOVE_START_FRAME;
+
+        const anticipationDelay = anticipationFrames * frameDuration;
+        const moveDuration = movingFrames * frameDuration;
+
+        els.astronaut.style.transition = "none";
+
+        await sleep(anticipationDelay);
+
+        els.astronaut.style.transition = `left ${Math.round(moveDuration)}ms linear`;
+        els.astronaut.style.left = `${targetLeft}px`;
+
+        await sleep(moveDuration);
+
+        els.astronaut.style.transition = "none";
+        createDust(targetLeft + half, 76);
+
+        if (isFinalJump) {
+          stopSpriteAnimation();
+          hideAstronaut();
+          await sleep(120);
+        } else {
+          const remainingFrames = state.jumpFrames.length - (JUMP_LAND_FRAME - JUMP_START_FRAME);
+          const remainingDuration = remainingFrames * frameDuration;
+          await sleep(remainingDuration);
+          stopSpriteAnimation();
+        }
+
+        els.astronaut.style.transition = DEFAULT_ASTRONAUT_TRANSITION;
+      } else {
+        playFrameSequence(state.walkFrames, 18, true);
+        els.astronaut.style.transition = "left 800ms linear";
+        els.astronaut.style.left = `${targetLeft}px`;
+        await sleep(820);
+        stopSpriteAnimation();
+        els.astronaut.style.transition = DEFAULT_ASTRONAUT_TRANSITION;
+      }
+    }
 
     function createDust(x, y) {
       for (let i = 0; i < 7; i++) {
