@@ -404,36 +404,59 @@
 
     .rocket {
       position: absolute;
-      right: 50px;
-      bottom: 32px;
-      width: 54px;
-      height: 86px;
-      z-index: 10;
+      right: 34px;
+      bottom: 34px;
+      width: 86px;
+      height: 128px;
+      z-index: 12;
       transform-origin: center bottom;
-      transition: transform 2000ms cubic-bezier(.22,.61,.18,1), opacity 1200ms ease;
+      opacity: 1;
+      pointer-events: none;
     }
 
-    .rocket.launching {
-      transform: translateY(-340px) scale(1.05);
+    .rocket img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
     }
 
     .rocket-flame {
       position: absolute;
       left: 50%;
-      bottom: -12px;
+      bottom: -10px;
       transform: translateX(-50%);
-      width: 20px;
-      height: 34px;
+      width: 26px;
+      height: 40px;
       border-radius: 50% 50% 70% 70%;
       background: linear-gradient(180deg, #ffe57c, #ff9b34 50%, #ff6534 100%);
       filter: blur(0.3px);
-      animation: flame 240ms ease-in-out infinite alternate;
       opacity: 0;
+      animation: flame 240ms ease-in-out infinite alternate;
     }
 
     .rocket.launch-ready .rocket-flame,
     .rocket.launching .rocket-flame {
       opacity: 1;
+    }
+
+    .rocket.launching {
+      animation: rocketLaunch 2000ms cubic-bezier(.22,.61,.18,1) forwards;
+    }
+
+    @keyframes rocketLaunch {
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+      15% {
+        transform: translateY(-14px) scale(1.02);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-520px) scale(1.08);
+        opacity: 0;
+      }
     }
 
     .astronaut {
@@ -659,16 +682,7 @@
         </div>
 
         <div class="rocket" id="rocket" aria-hidden="true">
-          <svg viewBox="0 0 80 120" width="100%" height="100%">
-            <ellipse cx="40" cy="112" rx="17" ry="5" fill="rgba(0,0,0,0.12)"/>
-            <path d="M40 8c16 10 22 34 22 60v20H18V68c0-26 6-50 22-60z" fill="#ffffff" stroke="#4c5f7c" stroke-width="4"/>
-            <circle cx="40" cy="42" r="10" fill="#8de0ff" stroke="#4c5f7c" stroke-width="4"/>
-            <path d="M18 70l-12 20h16l8-14" fill="#e95f55" stroke="#4c5f7c" stroke-width="4"/>
-            <path d="M62 70l12 20H58l-8-14" fill="#e95f55" stroke="#4c5f7c" stroke-width="4"/>
-            <path d="M30 88l-6 16h12l-2-16" fill="#f2d484" stroke="#4c5f7c" stroke-width="4"/>
-            <path d="M50 88l6 16H44l2-16" fill="#f2d484" stroke="#4c5f7c" stroke-width="4"/>
-            <path d="M26 14h28" stroke="#e95f55" stroke-width="5" stroke-linecap="round"/>
-          </svg>
+          <img id="rocketImg" src="rocket.png" alt="raket" />
           <div class="rocket-flame"></div>
         </div>
 
@@ -686,6 +700,7 @@
       types: new Set(["fingers", "stars", "dice", "tally", "tenframe"]),
       showTime: 1200,
       currentCard: null,
+      previousAnswerValue: null,
       progress: 0,
       stepCount: 6,
       stage: "idle",
@@ -698,6 +713,7 @@
       cardManifest: {},
       assetsReady: true,
       astronautFallbackShown: false,
+      cardVisible: false,
     };
 
     const els = {
@@ -714,6 +730,7 @@
       astronaut: document.getElementById("astronaut"),
       astronautImg: document.getElementById("astronautImg"),
       rocket: document.getElementById("rocket"),
+      rocketImg: document.getElementById("rocketImg"),
       burst: document.getElementById("burst"),
       dustLayer: document.getElementById("dustLayer"),
       statusRange: document.getElementById("statusRange"),
@@ -815,7 +832,7 @@
 
     function bindEvents() {
       els.minSlider.addEventListener("input", () => {
-        let val = Number(els.minSlider.value);
+        const val = Number(els.minSlider.value);
         if (val > state.maxValue) {
           state.maxValue = val;
           els.maxSlider.value = String(val);
@@ -825,7 +842,7 @@
       });
 
       els.maxSlider.addEventListener("input", () => {
-        let val = Number(els.maxSlider.value);
+        const val = Number(els.maxSlider.value);
         if (val < state.minValue) {
           state.minValue = val;
           els.minSlider.value = String(val);
@@ -852,11 +869,15 @@
         });
       });
 
+      els.showAgainBtn.addEventListener("click", handleToggleCard);
       els.newCardBtn.addEventListener("click", handleNewCard);
-      els.showAgainBtn.addEventListener("click", handleShowAgain);
       els.showAnswerBtn.addEventListener("click", handleShowAnswer);
       els.nextStepBtn.addEventListener("click", handleNextStep);
       els.resetBtn.addEventListener("click", handleReset);
+
+      els.rocketImg.onerror = () => {
+        els.rocket.style.display = "none";
+      };
     }
 
     function updateRangeUi() {
@@ -874,7 +895,10 @@
     function syncControls() {
       const hasCard = !!state.currentCard;
       const afterFlash = state.stage === "respond" || state.stage === "review" || state.stage === "answer";
+
       els.showAgainBtn.disabled = !(hasCard && afterFlash);
+      els.showAgainBtn.textContent = state.cardVisible ? "Verberg de kaart" : "Toon opnieuw";
+
       els.showAnswerBtn.disabled = !(hasCard && afterFlash);
       els.nextStepBtn.disabled = !(hasCard && afterFlash);
       els.newCardBtn.disabled = state.lock || !state.assetsReady;
@@ -889,6 +913,8 @@
       els.promptIcon.classList.remove("hidden");
       els.cardWrap.classList.add("hidden");
       els.answerBadge.classList.add("hidden");
+      state.cardVisible = false;
+      syncControls();
     }
 
     function showCard(card, showAnswer = false) {
@@ -904,12 +930,31 @@
       els.cardSurface.appendChild(img);
       els.cardWrap.classList.remove("hidden");
       els.promptIcon.classList.add("hidden");
+      state.cardVisible = true;
 
       if (showAnswer) {
         els.answerBadge.textContent = card.value;
         els.answerBadge.classList.remove("hidden");
       } else {
         els.answerBadge.classList.add("hidden");
+      }
+
+      syncControls();
+    }
+
+    function handleToggleCard() {
+      if (!state.currentCard || state.lock) return;
+
+      if (state.cardVisible) {
+        setPrompt("✋");
+        if (state.stage === "review") {
+          state.stage = "respond";
+        }
+        announce("Kaart verborgen.");
+      } else {
+        showCard(state.currentCard, state.stage === "answer");
+        state.stage = state.stage === "answer" ? "answer" : "review";
+        announce("Kaart opnieuw getoond.");
       }
     }
 
@@ -934,15 +979,32 @@
     function generateCard() {
       const deck = buildDeck();
       if (!deck.length) return null;
-      if (state.currentCard && deck.length > 1) {
-        const filtered = deck.filter(card => card.src !== state.currentCard.src);
-        return randomItem(filtered.length ? filtered : deck);
+
+      const distinctValues = [...new Set(deck.map(card => card.value))];
+
+      let candidates = deck;
+
+      if (
+        state.previousAnswerValue !== null &&
+        distinctValues.length >= 3
+      ) {
+        const filteredByValue = deck.filter(card => card.value !== state.previousAnswerValue);
+        if (filteredByValue.length) {
+          candidates = filteredByValue;
+        }
+      } else if (state.currentCard && deck.length > 1) {
+        const filteredByCard = deck.filter(card => card.src !== state.currentCard.src);
+        if (filteredByCard.length) {
+          candidates = filteredByCard;
+        }
       }
-      return randomItem(deck);
+
+      return randomItem(candidates);
     }
 
     async function handleNewCard() {
       if (state.lock || !state.assetsReady) return;
+
       const card = generateCard();
       if (!card) {
         announce("Geen kaarten gevonden binnen dit bereik.");
@@ -953,21 +1015,16 @@
       state.stage = "flash";
       state.lock = true;
       syncControls();
+
       showCard(card, false);
       announce("Nieuwe kaart getoond.");
+
       await sleep(state.showTime);
+
       setPrompt("✋");
       state.stage = "respond";
       state.lock = false;
       syncControls();
-    }
-
-    function handleShowAgain() {
-      if (!state.currentCard || state.lock) return;
-      showCard(state.currentCard, false);
-      state.stage = "review";
-      syncControls();
-      announce("Kaart opnieuw getoond.");
     }
 
     function handleShowAnswer() {
@@ -989,6 +1046,8 @@
       state.progress = Math.min(state.progress + 1, state.stepCount);
       updateTrack();
       await animateAstronaut();
+
+      state.previousAnswerValue = state.currentCard ? state.currentCard.value : state.previousAnswerValue;
       state.currentCard = null;
       state.stage = "idle";
 
@@ -996,7 +1055,7 @@
         setPrompt("🎉");
         celebrateBig();
         prepareRocket();
-        await sleep(500);
+        await sleep(300);
         await launchRocket();
         announce("Missie klaar. De raket stijgt op.");
       } else {
@@ -1011,13 +1070,14 @@
 
     function handleReset() {
       state.currentCard = null;
+      state.previousAnswerValue = null;
       state.progress = 0;
       state.stage = "idle";
       state.lock = false;
       state.rocketReady = false;
-      els.rocket.classList.remove("launching", "launch-ready");
-      els.rocket.style.opacity = "1";
-      els.rocket.style.transform = "translateY(0) scale(1)";
+      state.cardVisible = false;
+
+      resetRocket();
       setPrompt("👀");
       syncControls();
       updateTrack();
@@ -1219,19 +1279,41 @@
     }
 
     function prepareRocket() {
-      if (state.rocketReady) return;
       state.rocketReady = true;
       els.rocket.classList.add("launch-ready");
     }
 
+    function resetRocket() {
+      els.rocket.classList.remove("launch-ready", "launching");
+      els.rocket.style.animation = "none";
+      els.rocket.style.opacity = "1";
+      els.rocket.style.transform = "translateY(0) scale(1)";
+      void els.rocket.offsetWidth;
+      els.rocket.style.animation = "";
+    }
+
     async function launchRocket() {
+      resetRocket();
+      els.rocket.classList.add("launch-ready");
+      await sleep(80);
+
+      void els.rocket.offsetWidth;
+      els.rocket.classList.remove("launch-ready");
       els.rocket.classList.add("launching");
+
       createSparks(14, 72, 12);
-      for (let i = 0; i < 5; i++) {
-        createDust(els.rocket.offsetLeft + 20, 40);
-        await sleep(150);
+      for (let i = 0; i < 7; i++) {
+        createDust(els.rocket.offsetLeft + 28, 46);
+        await sleep(120);
       }
-      await sleep(1800);
+
+      await new Promise(resolve => {
+        const done = () => {
+          els.rocket.removeEventListener("animationend", done);
+          resolve();
+        };
+        els.rocket.addEventListener("animationend", done, { once: true });
+      });
     }
 
     function sleep(ms) {
@@ -1253,6 +1335,7 @@
       preloadFrames(state.walkFrames);
       preloadFrames(state.jumpFrames);
       startIdleSprite();
+      resetRocket();
       setPrompt("👀");
       announce("Spel geladen.");
     }
