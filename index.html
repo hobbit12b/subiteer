@@ -425,14 +425,15 @@
       position: absolute;
       left: 50%;
       bottom: -10px;
-      transform: translateX(-50%);
       width: 26px;
       height: 40px;
       border-radius: 50% 50% 70% 70%;
       background: linear-gradient(180deg, #ffe57c, #ff9b34 50%, #ff6534 100%);
       filter: blur(0.3px);
       opacity: 0;
+      transform-origin: center top;
       animation: flame 240ms ease-in-out infinite alternate;
+      will-change: transform, opacity;
     }
 
     .rocket.launch-ready .rocket-flame,
@@ -470,7 +471,7 @@
         left 800ms ease,
         bottom 700ms ease,
         transform 420ms ease,
-        opacity 320ms ease;
+        opacity 160ms ease;
       transform-origin: center center;
       filter: drop-shadow(0 12px 16px rgba(38, 51, 80, 0.18));
       pointer-events: none;
@@ -1155,7 +1156,7 @@
 
       if (immediate) {
         requestAnimationFrame(() => {
-          els.astronaut.style.transition = "left 800ms ease, bottom 700ms ease, transform 420ms ease, opacity 320ms ease";
+          els.astronaut.style.transition = "left 800ms ease, bottom 700ms ease, transform 420ms ease, opacity 160ms ease";
         });
       }
     }
@@ -1243,22 +1244,6 @@
       els.astronaut.classList.add("hidden-flight");
     }
 
-    async function boardAstronautIntoRocket() {
-      const currentHalf = astronautHalfWidth();
-      const rocketTargetLeft = els.rocket.offsetLeft + (els.rocket.offsetWidth * 0.16) - (currentHalf * 0.25);
-      const rocketTargetBottom = 48;
-
-      els.astronaut.style.transition = "left 520ms ease, bottom 520ms ease, transform 520ms ease, opacity 420ms ease";
-      els.astronaut.style.left = `${rocketTargetLeft}px`;
-      els.astronaut.style.bottom = `${rocketTargetBottom}px`;
-      els.astronaut.style.transform = "scale(0.22)";
-      els.astronaut.style.opacity = "0";
-
-      await sleep(560);
-      hideAstronaut();
-      els.astronaut.style.transition = "left 800ms ease, bottom 700ms ease, transform 420ms ease, opacity 320ms ease";
-    }
-
     async function animateAstronaut() {
       const nodePositions = getNodePositions();
       if (!nodePositions.length) return;
@@ -1283,9 +1268,10 @@
         createDust(targetLeft + half, 76);
 
         if (isFinalJump) {
-          await sleep(220);
+          await sleep(20);
           stopSpriteAnimation();
-          await boardAstronautIntoRocket();
+          hideAstronaut();
+          await sleep(120);
         } else {
           await sleep(1700);
           stopSpriteAnimation();
