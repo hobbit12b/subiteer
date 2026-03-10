@@ -160,6 +160,7 @@
     .btn-answer { background: linear-gradient(180deg, #68c983, #4ca866); }
     .btn-next { background: linear-gradient(180deg, #9a80ff, #775ce2); }
     .btn-reset { background: linear-gradient(180deg, #8591a8, #657288); }
+    .btn-manual { background: linear-gradient(180deg, #31b7b2, #1f918d); }
 
     .slider-row {
       display: grid;
@@ -658,6 +659,7 @@
           <button id="showAgainBtn" class="control-btn btn-show" disabled>Toon opnieuw</button>
           <button id="showAnswerBtn" class="control-btn btn-answer" disabled>Toon antwoord</button>
           <button id="nextStepBtn" class="control-btn btn-next" disabled>Volgende stap</button>
+          <button id="manualMoveBtn" class="control-btn btn-manual">Astronaut handmatig vooruit</button>
           <button id="resetBtn" class="control-btn btn-reset">Reset missie</button>
         </div>
       </section>
@@ -732,6 +734,7 @@
       showAgainBtn: document.getElementById("showAgainBtn"),
       showAnswerBtn: document.getElementById("showAnswerBtn"),
       nextStepBtn: document.getElementById("nextStepBtn"),
+      manualMoveBtn: document.getElementById("manualMoveBtn"),
       resetBtn: document.getElementById("resetBtn"),
       promptIcon: document.getElementById("promptIcon"),
       cardWrap: document.getElementById("cardWrap"),
@@ -760,6 +763,9 @@
       tally: "turven",
       tenframe: "10-structuur",
     };
+
+    const DEFAULT_ASTRONAUT_TRANSITION = "left 800ms ease, bottom 700ms ease, transform 420ms ease, opacity 160ms ease";
+    const JUMP_ASTRONAUT_TRANSITION = "left 480ms ease, bottom 300ms ease, transform 420ms ease, opacity 160ms ease";
 
     function buildWalkFrames() {
       const frames = [];
@@ -886,6 +892,7 @@
       els.newCardBtn.addEventListener("click", handleNewCard);
       els.showAnswerBtn.addEventListener("click", handleShowAnswer);
       els.nextStepBtn.addEventListener("click", handleNextStep);
+      els.manualMoveBtn.addEventListener("click", handleManualMove);
       els.resetBtn.addEventListener("click", handleReset);
 
       els.rocketImg.onerror = () => {
@@ -908,6 +915,7 @@
     function syncControls() {
       const hasCard = !!state.currentCard;
       const afterFlash = state.stage === "respond" || state.stage === "review" || state.stage === "answer";
+      const missionDone = state.progress >= state.stepCount;
 
       els.showAgainBtn.disabled = !(hasCard && afterFlash);
       els.showAgainBtn.textContent = state.cardVisible ? "Verberg de kaart" : "Toon opnieuw";
@@ -915,6 +923,7 @@
       els.showAnswerBtn.disabled = !(hasCard && afterFlash);
       els.nextStepBtn.disabled = !(hasCard && afterFlash);
       els.newCardBtn.disabled = state.lock || !state.assetsReady;
+      els.manualMoveBtn.disabled = state.lock || missionDone;
     }
 
     function announce(text) {
@@ -1049,28 +1058,27 @@
       celebrateSmall();
     }
 
-    async function handleNextStep() {
-      if (state.lock) return;
-      const allowedStages = ["respond", "review", "answer"];
-      if (!allowedStages.includes(state.stage)) return;
+    async function finishMissionSequence() {
+      setPrompt("🎉");
+      celebrateBig();
+      prepareRocket();
+      await sleep(220);
+      await launchRocket();
+      announce("Missie klaar. De raket stijgt op.");
+    }
+
+    async function advanceAstronautStep() {
+      if (state.lock || state.progress >= state.stepCount) return false;
 
       state.lock = true;
       syncControls();
+
       state.progress = Math.min(state.progress + 1, state.stepCount);
       updateTrack();
       await animateAstronaut();
 
-      state.previousAnswerValue = state.currentCard ? state.currentCard.value : state.previousAnswerValue;
-      state.currentCard = null;
-      state.stage = "idle";
-
       if (state.progress >= state.stepCount) {
-        setPrompt("🎉");
-        celebrateBig();
-        prepareRocket();
-        await sleep(180);
-        await launchRocket();
-        announce("Missie klaar. De raket stijgt op.");
+        await finishMissionSequence();
       } else {
         setPrompt("👀");
         announce("Astronaut is een stap verder.");
@@ -1079,6 +1087,29 @@
       state.lock = false;
       syncControls();
       startIdleSprite();
+      return true;
+    }
+
+    async function handleNextStep() {
+      if (state.lock) return;
+      const allowedStages = ["respond", "review", "answer"];
+      if (!allowedStages.includes(state.stage)) return;
+
+      const moved = await advanceAstronautStep();
+      if (!moved) return;
+
+      state.previousAnswerValue = state.currentCard ? state.currentCard.value : state.previousAnswerValue;
+      state.currentCard = null;
+      state.stage = "idle";
+    }
+
+    async function handleManualMove() {
+      if (state.lock || state.progress >= state.stepCount) return;
+
+      state.currentCard = null;
+      state.stage = "idle";
+      setPrompt("👀");
+      await advanceAstronautStep();
     }
 
     function handleReset() {
@@ -1158,7 +1189,7 @@
 
       if (immediate) {
         requestAnimationFrame(() => {
-          els.astronaut.style.transition = "left 800ms ease, bottom 700ms ease, transform 420ms ease, opacity 160ms ease";
+          els.astronaut.style.transition = DEFAULT_ASTRONAUT_TRANSITION;
         });
       }
     }
@@ -1233,6 +1264,7 @@
     function resetAstronautVisualState() {
       els.astronaut.style.transform = "scale(1)";
       els.astronaut.style.opacity = "1";
+      els.astronaut.style.transition = DEFAULT_ASTRONAUT_TRANSITION;
     }
 
     function showAstronaut() {
@@ -1260,26 +1292,42 @@
       resetAstronautVisualState();
 
       if (isJumpStep) {
-        playFrameSequence(state.jumpFrames, 18, false);
+        const fps = 18;
+        const frameDuration = 1000 / fps;
+        const anticipationFrames = 8;
+        const anticipationDelay = Math.round(frameDuration * anticipationFrames);
+
+        playFrameSequence(state.jumpFrames, fps, false);
+
+        els.astronaut.style.transition = JUMP_ASTRONAUT_TRANSITION;
+        els.astronaut.style.bottom = "6px";
+
+        await sleep(anticipationDelay);
+
         els.astronaut.style.left = `${targetLeft}px`;
         els.astronaut.style.bottom = "92px";
 
-        await sleep(680);
+        await sleep(320);
 
         els.astronaut.style.bottom = "6px";
+
+        await sleep(260);
+
         createDust(targetLeft + half, 76);
 
         if (isFinalJump) {
-          await sleep(20);
           stopSpriteAnimation();
           hideAstronaut();
-          await sleep(120);
+          await sleep(220);
         } else {
-          await sleep(1700);
+          await sleep(900);
           stopSpriteAnimation();
         }
+
+        els.astronaut.style.transition = DEFAULT_ASTRONAUT_TRANSITION;
       } else {
         playFrameSequence(state.walkFrames, 18, true);
+        els.astronaut.style.transition = DEFAULT_ASTRONAUT_TRANSITION;
         els.astronaut.style.left = `${targetLeft}px`;
         els.astronaut.style.bottom = "6px";
         await sleep(820);
