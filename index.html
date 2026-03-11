@@ -316,7 +316,7 @@
       height: min(86%, 760px);
       display: grid;
       place-items: center;
-      transform: translateY(-28px);
+      transform: translateY(-30px);
     }
 
     .prompt-icon {
@@ -329,28 +329,79 @@
       border: 4px solid var(--panel-border);
       box-shadow: var(--shadow);
       font-size: 4.2rem;
+      overflow: hidden;
     }
 
-    .celebration-wrap {
-      width: 260px;
-      height: 260px;
+    .end-orbit {
+      width: 240px;
+      height: 240px;
+      border-radius: 999px;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2), rgba(255,255,255,0) 30%),
+        radial-gradient(circle at 70% 35%, rgba(255,255,255,0.18), rgba(255,255,255,0) 18%),
+        radial-gradient(circle at 25% 75%, rgba(255,255,255,0.14), rgba(255,255,255,0) 14%),
+        radial-gradient(circle at 78% 68%, rgba(255,255,255,0.16), rgba(255,255,255,0) 16%),
+        linear-gradient(180deg, #10203e 0%, #132f5c 55%, #0e1f3a 100%);
+      border: 6px solid #dde6f2;
+      box-shadow: 0 20px 50px rgba(22, 41, 74, 0.14);
       display: grid;
       place-items: center;
-      background: transparent;
     }
 
-    .celebration-wrap img {
+    .end-orbit::before,
+    .end-orbit::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      background: white;
+      opacity: 0.9;
+      box-shadow:
+        34px 22px 0 -1px rgba(255,255,255,0.85),
+        72px -16px 0 -2px rgba(255,255,255,0.75),
+        -48px 56px 0 -1px rgba(255,255,255,0.8),
+        -62px -34px 0 -2px rgba(255,255,255,0.72),
+        18px 84px 0 -2px rgba(255,255,255,0.72),
+        -84px 12px 0 -1px rgba(255,255,255,0.82);
+    }
+
+    .end-orbit::before {
+      width: 4px;
+      height: 4px;
+      top: 52px;
+      left: 72px;
+    }
+
+    .end-orbit::after {
+      width: 3px;
+      height: 3px;
+      top: 120px;
+      left: 140px;
+    }
+
+    .end-rocket {
+      position: absolute;
+      width: 125px;
+      height: 125px;
+      display: grid;
+      place-items: center;
+      animation: driftRocket 4200ms ease-in-out infinite;
+      filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.28));
+    }
+
+    .end-rocket img {
       width: 100%;
       height: 100%;
       object-fit: contain;
+      transform: rotate(90deg);
       display: block;
-      filter: drop-shadow(0 12px 18px rgba(38, 51, 80, 0.18));
     }
 
     .prompt-icon.hidden,
     .card-wrap.hidden,
     .answer-badge.hidden,
-    .celebration-wrap.hidden {
+    .end-orbit.hidden {
       display: none;
     }
 
@@ -514,9 +565,9 @@
     .rocket-flame {
       position: absolute;
       left: 50%;
-      bottom: 28px;
-      width: 26px;
-      height: 40px;
+      bottom: 30px;
+      width: 28px;
+      height: 42px;
       border-radius: 50% 50% 70% 70%;
       background: linear-gradient(180deg, #ffe57c, #ff9b34 50%, #ff6534 100%);
       filter: blur(0.3px);
@@ -558,8 +609,8 @@
       width: var(--astronaut-size);
       height: var(--astronaut-size);
       z-index: 30;
-      transition: left 500ms linear;
-      transform-origin: center center;
+      transition: left 500ms linear, transform 280ms ease;
+      transform-origin: center bottom;
       filter: drop-shadow(0 12px 16px rgba(38, 51, 80, 0.18));
       pointer-events: none;
       opacity: 1;
@@ -669,6 +720,14 @@
       100% { transform: translateX(-50%) scaleY(1.1); }
     }
 
+    @keyframes driftRocket {
+      0%   { transform: translate(-18px, 4px) rotate(-2deg); }
+      25%  { transform: translate(10px, -6px) rotate(1deg); }
+      50%  { transform: translate(22px, 2px) rotate(2deg); }
+      75%  { transform: translate(-2px, 8px) rotate(0deg); }
+      100% { transform: translate(-18px, 4px) rotate(-2deg); }
+    }
+
     @media (max-width: 1100px) {
       .app { grid-template-columns: 240px 1fr; }
       :root { --menu-width: 240px; }
@@ -756,8 +815,10 @@
         <div class="center-stage">
           <div id="promptIcon" class="prompt-icon">👀</div>
 
-          <div id="celebrationWrap" class="celebration-wrap hidden" aria-hidden="true">
-            <img id="celebrationImg" src="" alt="blije astronaut" />
+          <div id="endOrbit" class="end-orbit hidden" aria-hidden="true">
+            <div class="end-rocket">
+              <img id="endRocketImg" src="rocket.png" alt="raket in de ruimte" />
+            </div>
           </div>
 
           <div id="cardWrap" class="card-wrap hidden">
@@ -806,15 +867,12 @@
       lock: false,
       rocketReady: false,
       spriteTimer: null,
-      celebrationTimer: null,
       idleFrames: ["sprites/astronaut/idle/frame_000001.png"],
       walkFrames: [],
       jumpFrames: [],
-      happyFrames: [],
       cardManifest: {},
       assetsReady: true,
       astronautFallbackShown: false,
-      celebrationFallbackShown: false,
       cardVisible: false,
     };
 
@@ -825,8 +883,8 @@
       manualMoveBtn: document.getElementById("manualMoveBtn"),
       resetBtn: document.getElementById("resetBtn"),
       promptIcon: document.getElementById("promptIcon"),
-      celebrationWrap: document.getElementById("celebrationWrap"),
-      celebrationImg: document.getElementById("celebrationImg"),
+      endOrbit: document.getElementById("endOrbit"),
+      endRocketImg: document.getElementById("endRocketImg"),
       cardWrap: document.getElementById("cardWrap"),
       cardSurface: document.getElementById("cardSurface"),
       answerBadge: document.getElementById("answerBadge"),
@@ -855,7 +913,7 @@
       tenframe: "10-structuur",
     };
 
-    const DEFAULT_ASTRONAUT_TRANSITION = "left 500ms linear";
+    const DEFAULT_ASTRONAUT_TRANSITION = "left 500ms linear, transform 280ms ease";
     const JUMP_MOVE_START_FRAME = 98;
     const JUMP_LAND_FRAME = 117;
     const JUMP_START_FRAME = 90;
@@ -877,21 +935,8 @@
       return frames;
     }
 
-    function buildHappyFrames() {
-      return [
-        "sprites/astronaut/happy/happy_01.png",
-        "sprites/astronaut/happy/happy_02.png",
-        "sprites/astronaut/happy/happy_03.png",
-        "sprites/astronaut/happy/happy_04.png",
-        "sprites/astronaut/happy/happy_05.png",
-        "sprites/astronaut/happy/happy_06.png",
-        "sprites/astronaut/happy/happy_07.png"
-      ];
-    }
-
     state.walkFrames = buildWalkFrames();
     state.jumpFrames = buildJumpFrames();
-    state.happyFrames = buildHappyFrames();
 
     state.cardManifest = {
       fingers: {
@@ -1004,6 +1049,10 @@
       els.rocketImg.onerror = () => {
         els.rocket.style.display = "none";
       };
+
+      els.endRocketImg.onerror = () => {
+        els.endOrbit.innerHTML = '<div style="font-size:4rem;">🚀</div>';
+      };
     }
 
     function updateDualRangeFill() {
@@ -1053,27 +1102,24 @@
       els.promptIcon.classList.add("hidden");
       els.cardWrap.classList.add("hidden");
       els.answerBadge.classList.add("hidden");
-      els.celebrationWrap.classList.add("hidden");
+      els.endOrbit.classList.add("hidden");
       state.cardVisible = false;
     }
 
     function setPrompt(icon) {
-      stopCelebrationAnimation();
       hideAllCenterContent();
       els.promptIcon.textContent = icon;
       els.promptIcon.classList.remove("hidden");
       syncControls();
     }
 
-    function showCelebration() {
+    function showEndOrbit() {
       hideAllCenterContent();
-      els.celebrationWrap.classList.remove("hidden");
-      startCelebrationAnimation();
+      els.endOrbit.classList.remove("hidden");
       syncControls();
     }
 
     function showCard(card, showAnswer = false) {
-      stopCelebrationAnimation();
       els.cardSurface.innerHTML = "";
 
       const img = document.createElement("img");
@@ -1185,7 +1231,7 @@
     }
 
     async function finishMissionSequence() {
-      showCelebration();
+      showEndOrbit();
       celebrateBig();
       prepareRocket();
       await sleep(220);
@@ -1212,9 +1258,11 @@
 
       state.lock = false;
       syncControls();
+
       if (state.progress < state.stepCount) {
         startIdleSprite();
       }
+
       return true;
     }
 
@@ -1229,7 +1277,6 @@
 
     function handleReset() {
       stopSpriteAnimation();
-      stopCelebrationAnimation();
 
       state.currentCard = null;
       state.previousAnswerValue = null;
@@ -1325,14 +1372,6 @@
       }
     }
 
-    function stopCelebrationAnimation() {
-      if (state.celebrationTimer) {
-        clearTimeout(state.celebrationTimer);
-        state.celebrationTimer = null;
-      }
-      state.celebrationFallbackShown = false;
-    }
-
     function showAstronautFallback() {
       if (state.astronautFallbackShown) return;
       state.astronautFallbackShown = true;
@@ -1357,35 +1396,6 @@
       clearAstronautFallback();
       els.astronautImg.onerror = () => showAstronautFallback();
       els.astronautImg.src = src;
-    }
-
-    function startCelebrationAnimation() {
-      stopCelebrationAnimation();
-
-      const frames = state.happyFrames;
-      if (!frames.length) {
-        els.celebrationWrap.innerHTML = '<div style="font-size:5rem;">🥳</div>';
-        return;
-      }
-
-      let index = 0;
-      const fps = 7;
-      const frameDuration = 1000 / fps;
-
-      els.celebrationImg.onerror = () => {
-        if (state.celebrationFallbackShown) return;
-        state.celebrationFallbackShown = true;
-        els.celebrationWrap.innerHTML = '<div style="font-size:5rem;">🥳</div>';
-      };
-
-      function next() {
-        if (els.celebrationWrap.classList.contains("hidden")) return;
-        els.celebrationImg.src = frames[index];
-        index = (index + 1) % frames.length;
-        state.celebrationTimer = setTimeout(next, frameDuration);
-      }
-
-      next();
     }
 
     function preloadFrames(frames) {
@@ -1469,28 +1479,35 @@
         playFrameSequence(state.jumpFrames, JUMP_FPS, false);
 
         els.astronaut.style.transition = "none";
+        els.astronaut.style.transform = "scale(1)";
         await sleep(anticipationDelay);
 
-        els.astronaut.style.transition = `left ${Math.round(moveDuration)}ms linear`;
-        els.astronaut.style.left = `${targetLeft}px`;
+        if (isFinalJump) {
+          els.astronaut.style.transition = `left ${Math.round(moveDuration)}ms linear, transform ${Math.round(moveDuration)}ms ease`;
+          els.astronaut.style.left = `${targetLeft}px`;
+          els.astronaut.style.transform = "scale(0.7)";
+        } else {
+          els.astronaut.style.transition = `left ${Math.round(moveDuration)}ms linear`;
+          els.astronaut.style.left = `${targetLeft}px`;
+        }
 
         await sleep(moveDuration);
 
         els.astronaut.style.transition = "none";
         createDust(targetLeft + half, 76);
 
+        const playedFramesCount = JUMP_LAND_FRAME - JUMP_START_FRAME;
+        const remainingFrames = Math.max(0, state.jumpFrames.length - playedFramesCount);
+        const remainingDuration = remainingFrames * frameDuration;
+
+        await sleep(remainingDuration);
+        stopSpriteAnimation();
+
         if (isFinalJump) {
-          const remainingFrames = Math.max(0, state.jumpFrames.length - (JUMP_LAND_FRAME - JUMP_START_FRAME));
-          const remainingDuration = remainingFrames * frameDuration;
-          await sleep(remainingDuration);
-          stopSpriteAnimation();
           hideAstronaut();
           await sleep(120);
         } else {
-          const remainingFrames = Math.max(0, state.jumpFrames.length - (JUMP_LAND_FRAME - JUMP_START_FRAME));
-          const remainingDuration = remainingFrames * frameDuration;
-          await sleep(remainingDuration);
-          stopSpriteAnimation();
+          els.astronaut.style.transform = "scale(1)";
           setAstronautSprite(state.idleFrames[0]);
         }
 
@@ -1500,7 +1517,8 @@
         void els.astronaut.offsetWidth;
         playFrameSequence(state.walkFrames, 18, true);
 
-        els.astronaut.style.transition = "left 800ms linear";
+        els.astronaut.style.transform = "scale(1)";
+        els.astronaut.style.transition = "left 800ms linear, transform 280ms ease";
         els.astronaut.style.left = `${targetLeft}px`;
 
         await sleep(820);
@@ -1605,7 +1623,6 @@
       preloadFrames(state.idleFrames);
       preloadFrames(state.walkFrames);
       preloadFrames(state.jumpFrames);
-      preloadFrames(state.happyFrames);
       showAstronaut();
       resetAstronautVisualState();
       startIdleSprite();
